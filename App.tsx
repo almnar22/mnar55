@@ -61,6 +61,7 @@ const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [currentPage, setCurrentPage] = useState<Page>(Page.LOGIN);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoginLoading, setIsLoginLoading] = useState(false);
   
   const [books, setBooks] = useState<Book[]>([]);
   const [users, setUsers] = useState<User[]>([]);
@@ -70,11 +71,10 @@ const App: React.FC = () => {
   const [notifications, setNotifications] = useState<string[]>([]);
   const [specializations, setSpecializations] = useState<string[]>([]);
 
-  // Load Data from Supabase
-  const fetchData = async () => {
+  // 1. Initial Load: Only fetch Settings (Fast)
+  const fetchPublicSettings = async () => {
       setIsLoading(true);
       try {
-          // 1. Fetch Settings
           const { data: settingsData } = await supabase.from('settings').select('*').limit(1).single();
           if (settingsData && settingsData.config) {
               setSettings(settingsData.config);
@@ -84,42 +84,49 @@ const App: React.FC = () => {
               const { data: newSetting } = await supabase.from('settings').insert([{ config: INITIAL_SETTINGS }]).select().single();
               if (newSetting) setSettingsId(newSetting.id);
           }
-
-          // 2. Fetch Books
-          const { data: booksData } = await supabase.from('books').select('*');
-          if (booksData) setBooks(booksData as Book[]);
-
-          // 3. Fetch Users
-          const { data: usersData } = await supabase.from('users').select('*');
-          if (usersData) setUsers(usersData as User[]);
-
-          // 4. Fetch Loans
-          const { data: loansData } = await supabase.from('loans').select('*');
-          if (loansData) setLoans(loansData as Loan[]);
-
-          // 5. Fetch Specializations
-          const { data: specsData } = await supabase.from('specializations').select('*');
-          if (specsData) setSpecializations(specsData.map((s: any) => s.name));
-
-          // If no admin user exists, create a default one
-          if (!usersData || usersData.length === 0) {
-              const defaultAdmin: User = {
-                  id: 'admin', name: 'Admin', email: 'admin@system.com', password: 'admin',
-                  role: 'admin', status: 'active', joinDate: new Date().toISOString(), visits: 0, department: 'IT'
-              };
-              await supabase.from('users').insert([defaultAdmin]);
-              setUsers([defaultAdmin]);
-          }
-
       } catch (error) {
-          console.error("Error fetching data:", error);
+          console.error("Error fetching settings:", error);
       } finally {
           setIsLoading(false);
       }
   };
 
+  // 2. Heavy Load: Fetch Books, Users, Loans (Parallel) - Only after login
+  const fetchProtectedData = async () => {
+      setIsLoginLoading(true);
+      try {
+          // Use Promise.all to fetch data in parallel instead of sequentially
+          const [booksResult, usersResult, loansResult, specsResult] = await Promise.all([
+              supabase.from('books').select('*'),
+              supabase.from('users').select('*'),
+              supabase.from('loans').select('*'),
+              supabase.from('specializations').select('*')
+          ]);
+
+          if (booksResult.data) setBooks(booksResult.data as Book[]);
+          if (usersResult.data) setUsers(usersResult.data as User[]);
+          if (loansResult.data) setLoans(loansResult.data as Loan[]);
+          if (specsResult.data) setSpecializations(specsResult.data.map((s: any) => s.name));
+
+          // Fallback: If no users exist, ensure admin exists locally for this session
+          if (!usersResult.data || usersResult.data.length === 0) {
+              const defaultAdmin: User = {
+                  id: 'admin', name: 'Admin', email: 'admin@system.com', password: 'admin',
+                  role: 'admin', status: 'active', joinDate: new Date().toISOString(), visits: 0, department: 'IT'
+              };
+               // Don't insert automatically to avoid race conditions, just set state
+               setUsers([defaultAdmin]);
+          }
+
+      } catch (error) {
+          console.error("Error fetching protected data:", error);
+      } finally {
+          setIsLoginLoading(false);
+      }
+  };
+
   useEffect(() => {
-      fetchData();
+      fetchPublicSettings();
   }, []);
 
   // Check for notifications
@@ -140,6 +147,7 @@ const App: React.FC = () => {
 
   // Auth Handlers
   const handleLogin = async (id: string, password: string): Promise<string | void> => {
+      // 1. Authenticate against Supabase directly
       const { data, error } = await supabase
         .from('users')
         .select('*')
@@ -156,17 +164,25 @@ const App: React.FC = () => {
           return 'تم إيقاف هذا الحساب. يرجى مراجعة الإدارة.';
       }
 
-      // Update visit count
+      // 2. Update visit count
       const updatedUser = { ...user, lastLogin: new Date().toISOString(), visits: (user.visits || 0) + 1 };
-      await supabase.from('users').update({ lastLogin: updatedUser.lastLogin, visits: updatedUser.visits }).eq('id', user.id);
+      
+      // Don't await this update to block UI, let it run in background
+      supabase.from('users').update({ lastLogin: updatedUser.lastLogin, visits: updatedUser.visits }).eq('id', user.id).then();
       
       setCurrentUser(updatedUser);
+      
+      // 3. Fetch Data NOW
+      await fetchProtectedData();
+      
       setCurrentPage(Page.DASHBOARD);
   };
 
   const handleLogout = () => {
       setCurrentUser(null);
       setCurrentPage(Page.LOGIN);
+      // Optional: clear data to free memory if needed, but keeping it makes re-login faster
+      // setBooks([]); 
   };
 
   // --- CRUD Handlers (Synced with Supabase) ---
@@ -250,13 +266,9 @@ const App: React.FC = () => {
   };
 
   const handleUpdateSpecialization = async (oldName: string, newName: string) => {
-      // Supabase doesn't support direct PK update easily, usually delete insert or cascade.
-      // For simplicity in this structure: Update table, then update books
       const { error } = await supabase.from('specializations').update({ name: newName }).eq('name', oldName);
       if (!error) {
-          // Also update books with this spec
           await supabase.from('books').update({ specialization: newName }).eq('specialization', oldName);
-          
           setSpecializations(prev => prev.map(s => s === oldName ? newName : s));
           setBooks(prev => prev.map(b => b.specialization === oldName ? { ...b, specialization: newName } : b));
       }
@@ -297,9 +309,7 @@ const App: React.FC = () => {
 
     const { error } = await supabase.from('loans').insert([newLoan]);
     if (!error) {
-        // Update book copies
         await supabase.from('books').update({ remainingCopies: book.remainingCopies - 1 }).eq('id', book.id);
-        
         setLoans(prev => [...prev, newLoan]);
         setBooks(prev => prev.map(b => b.id === bookId ? { ...b, remainingCopies: b.remainingCopies - 1 } : b));
     }
@@ -309,7 +319,6 @@ const App: React.FC = () => {
     const loan = loans.find(l => l.id === loanId);
     if (!loan) return;
 
-    // We use explicit object for updates to ensure types are correct
     const updates = {
         status: condition === 'lost' ? 'lost' : 'returned',
         returnDate: new Date().toISOString(),
@@ -356,17 +365,29 @@ const App: React.FC = () => {
       alert('لاستعادة نسخة احتياطية كاملة، يرجى التواصل مع مسؤول قاعدة البيانات.');
   };
 
+  // Show loading spinner only for initial settings load
   if (isLoading) {
       return (
           <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 gap-4">
               <Loader2 className="w-12 h-12 animate-spin text-[#4A90E2]" />
-              <p className="text-slate-500 font-bold">جاري الاتصال بقاعدة البيانات...</p>
+              <p className="text-slate-500 font-bold">جاري تحميل النظام...</p>
           </div>
       );
   }
 
+  // Show login screen
   if (!currentUser || currentPage === Page.LOGIN) {
-      return <Login onLogin={handleLogin} libraryName={settings.name} />;
+      return (
+        <div className="relative">
+             {isLoginLoading && (
+                 <div className="absolute inset-0 bg-black/50 z-50 flex flex-col items-center justify-center text-white backdrop-blur-sm">
+                     <Loader2 className="w-16 h-16 animate-spin mb-4" />
+                     <p className="text-xl font-bold">جاري تحضير البيانات...</p>
+                 </div>
+             )}
+             <Login onLogin={handleLogin} libraryName={settings.name} />
+        </div>
+      );
   }
 
   const renderContent = () => {

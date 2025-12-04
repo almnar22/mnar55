@@ -7,39 +7,32 @@ import {
 } from 'lucide-react';
 
 interface LoginProps {
-  users: User[];
-  onLogin: (user: User) => void;
+  onLogin: (id: string, password: string) => Promise<string | void>; // Changed signature
   libraryName: string;
 }
 
-export const Login: React.FC<LoginProps> = ({ users, onLogin, libraryName }) => {
+export const Login: React.FC<LoginProps> = ({ onLogin, libraryName }) => {
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
-    // Simulate network delay for effect
-    setTimeout(() => {
-        const user = users.find(u => u.id === id && u.password === password);
-
-        if (user) {
-        if (user.status === 'suspended') {
-            setError('تم إيقاف هذا الحساب. يرجى مراجعة إدارة المكتبة.');
-            setLoading(false);
-            return;
+    try {
+        const errorMsg = await onLogin(id, password);
+        if (errorMsg) {
+            setError(errorMsg);
         }
-        onLogin(user);
-        } else {
-        setError('بيانات الدخول غير صحيحة');
+    } catch (err) {
+        setError('حدث خطأ أثناء الاتصال بالخادم');
+    } finally {
         setLoading(false);
-        }
-    }, 800);
+    }
   };
 
   return (

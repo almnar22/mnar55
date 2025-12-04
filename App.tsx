@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { Dashboard } from './components/Dashboard';
@@ -9,93 +10,27 @@ import { UserManagement } from './components/UserManagement';
 import { Specializations } from './components/Specializations';
 import { Settings } from './components/Settings';
 import { Page, Book, Loan, User, LibrarySettings } from './types';
-
-// Mock Initial Data based on user request
-const INITIAL_BOOKS: Book[] = [
-  { 
-    id: '1624', code: '1624', inventoryNumber: '0.00', 
-    title: 'إدارة الأعمال وإدارة المستشفيات الجزء الأول', author: 'محمد عبد المنعم شعيب', 
-    specialization: 'إدارة صحية', department: 'العلوم الصحية', 
-    cabinet: 'F9', bookShelfNumber: '1', shelfOrder: 'رف 1', 
-    copies: 2, editionYear: '2013', entryDate: '2024-02-10', 
-    remainingCopies: 2, parts: 0, price: 0.00 
-  },
-  { 
-    id: '1625', code: '1625', inventoryNumber: '0.00', 
-    title: 'الإدارة الصحية وإدارة المستشفيات الجزء الثاني', author: 'محمد عبد المنعم شعيب', 
-    specialization: 'إدارة صحية', department: 'العلوم الصحية', 
-    cabinet: 'F9', bookShelfNumber: '3', shelfOrder: 'رف 1', 
-    copies: 2, editionYear: '2014', entryDate: '2024-02-10', 
-    remainingCopies: 1, parts: 0, price: 0.00 
-  },
-  { 
-    id: '1626', code: '1626', inventoryNumber: '0.00', 
-    title: 'قاموس المصطلحات الطبية الموحد', author: 'د. أحمد شفيق', 
-    specialization: 'قواميس ومعاجم', department: 'العلوم الصحية', 
-    cabinet: 'D1', bookShelfNumber: '5', shelfOrder: 'رف 2', 
-    copies: 5, editionYear: '2020', entryDate: '2024-01-15', 
-    remainingCopies: 5, parts: 1, price: 150.00 
-  },
-  { 
-    id: '1627', code: '1627', inventoryNumber: '0.00', 
-    title: 'مجلة البحوث الصحية - العدد 45', author: 'هيئة التحرير', 
-    specialization: 'دوريات علمية', department: 'الدوريات', 
-    cabinet: 'M1', bookShelfNumber: '12', shelfOrder: 'رف 3', 
-    copies: 10, editionYear: '2024', entryDate: '2024-03-01', 
-    remainingCopies: 10, parts: 1, price: 50.00 
-  },
-];
-
-const INITIAL_USERS: User[] = [
-    {
-        id: 'admin', name: 'المسؤول الرئيسي', email: 'admin@library.edu', password: 'admin',
-        role: 'admin', status: 'active', joinDate: '2023-01-01', department: 'الإدارة', visits: 142
-    },
-    {
-        id: '1001', name: 'عمر خالد', email: 'omar@student.edu', password: '123',
-        role: 'student', status: 'active', joinDate: '2023-09-01', department: 'العلوم الصحية', visits: 25
-    },
-    {
-        id: '1002', name: 'سارة أحمد', email: 'sara@student.edu', password: '123',
-        role: 'student', status: 'active', joinDate: '2023-09-15', department: 'التمريض', visits: 12
-    },
-    {
-        id: '2001', name: 'د. محمد علي', email: 'prof.mohamed@university.edu', password: '456',
-        role: 'professor', status: 'active', joinDate: '2022-01-15', department: 'علوم الحاسوب', visits: 89
-    },
-    {
-        id: '3001', name: 'أحمد سالم', email: 'staff.ahmed@university.edu', password: '789',
-        role: 'staff', status: 'inactive', joinDate: '2023-05-10', department: 'شؤون الطلاب', visits: 45
-    }
-];
-
-const INITIAL_LOANS: Loan[] = [
-  { 
-      id: 'l1', bookId: '1625', bookTitle: 'الإدارة الصحية وإدارة المستشفيات الجزء الثاني', 
-      userId: '1001', studentName: 'عمر خالد', 
-      issueDate: '2023-10-01', dueDate: '2023-10-15', status: 'overdue',
-      originalLocation: { cabinet: 'F9', shelfOrder: 'رف 1', bookShelfNumber: '3' }
-  },
-];
+import { supabase } from './services/supabaseClient';
+import { Loader2 } from 'lucide-react';
 
 const INITIAL_SETTINGS: LibrarySettings = {
-  name: 'مكتبة الجامعة المركزية',
-  institution: 'مكتبة الجامعة المركزية',
+  name: 'مكتبة كلية المنار الجامعية المركزية',
+  institution: 'كلية المنار',
   copyrightText: 'جميع الحقوق محفوظة © 2025',
-  email: 'admin@library.edu',
+  email: 'admin@almanar.edu',
   phone: '0501234567',
   
   backupIntervalDays: 7,
-  lastBackupDate: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
+  lastBackupDate: new Date().toISOString(),
   
   dashboardMode: 'auto',
   manualStats: {
-      students: 2847,
-      books: 45239,
-      journals: 1203,
-      professors: 327,
-      borrowed: 892,
-      available: 44347
+      students: 0,
+      books: 0,
+      journals: 0,
+      professors: 0,
+      borrowed: 0,
+      available: 0
   },
   visibleStats: {
       students: true,
@@ -125,57 +60,108 @@ const INITIAL_SETTINGS: LibrarySettings = {
 const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [currentPage, setCurrentPage] = useState<Page>(Page.LOGIN);
+  const [isLoading, setIsLoading] = useState(true);
   
-  const [books, setBooks] = useState<Book[]>(INITIAL_BOOKS);
-  const [users, setUsers] = useState<User[]>(INITIAL_USERS);
-  const [loans, setLoans] = useState<Loan[]>(INITIAL_LOANS);
+  const [books, setBooks] = useState<Book[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loans, setLoans] = useState<Loan[]>([]);
   const [settings, setSettings] = useState<LibrarySettings>(INITIAL_SETTINGS);
+  const [settingsId, setSettingsId] = useState<number | null>(null);
   const [notifications, setNotifications] = useState<string[]>([]);
-  
-  // State for Specializations
-  const [specializations, setSpecializations] = useState<string[]>(() => 
-    Array.from(new Set(INITIAL_BOOKS.map(b => b.specialization)))
-  );
+  const [specializations, setSpecializations] = useState<string[]>([]);
+
+  // Load Data from Supabase
+  const fetchData = async () => {
+      setIsLoading(true);
+      try {
+          // 1. Fetch Settings
+          const { data: settingsData } = await supabase.from('settings').select('*').limit(1).single();
+          if (settingsData && settingsData.config) {
+              setSettings(settingsData.config);
+              setSettingsId(settingsData.id);
+          } else {
+              // Create default settings if not exist
+              const { data: newSetting } = await supabase.from('settings').insert([{ config: INITIAL_SETTINGS }]).select().single();
+              if (newSetting) setSettingsId(newSetting.id);
+          }
+
+          // 2. Fetch Books
+          const { data: booksData } = await supabase.from('books').select('*');
+          if (booksData) setBooks(booksData as Book[]);
+
+          // 3. Fetch Users
+          const { data: usersData } = await supabase.from('users').select('*');
+          if (usersData) setUsers(usersData as User[]);
+
+          // 4. Fetch Loans
+          const { data: loansData } = await supabase.from('loans').select('*');
+          if (loansData) setLoans(loansData as Loan[]);
+
+          // 5. Fetch Specializations
+          const { data: specsData } = await supabase.from('specializations').select('*');
+          if (specsData) setSpecializations(specsData.map((s: any) => s.name));
+
+          // If no admin user exists, create a default one
+          if (!usersData || usersData.length === 0) {
+              const defaultAdmin: User = {
+                  id: 'admin', name: 'Admin', email: 'admin@system.com', password: 'admin',
+                  role: 'admin', status: 'active', joinDate: new Date().toISOString(), visits: 0, department: 'IT'
+              };
+              await supabase.from('users').insert([defaultAdmin]);
+              setUsers([defaultAdmin]);
+          }
+
+      } catch (error) {
+          console.error("Error fetching data:", error);
+      } finally {
+          setIsLoading(false);
+      }
+  };
+
+  useEffect(() => {
+      fetchData();
+  }, []);
 
   // Check for notifications
   useEffect(() => {
     if (!currentUser) return;
     const notes: string[] = [];
     
-    // Check overdue loans
     if (currentUser.role === 'admin') {
         const overdueCount = loans.filter(l => l.status === 'overdue').length;
         if (overdueCount > 0) notes.push(`يوجد ${overdueCount} كتب متأخرة عن موعد الاسترجاع.`);
-        
-        // Check backup
-        if (settings.lastBackupDate) {
-            const lastBackup = new Date(settings.lastBackupDate).getTime();
-            const daysSinceBackup = (Date.now() - lastBackup) / (1000 * 3600 * 24);
-            if (daysSinceBackup > settings.backupIntervalDays) {
-                notes.push('حان موعد النسخ الاحتياطي الدوري للبيانات.');
-            }
-        }
     } else {
-        // Student notifications
         const myOverdue = loans.filter(l => l.userId === currentUser.id && l.status === 'overdue').length;
         if (myOverdue > 0) notes.push(`لديك ${myOverdue} كتب متأخرة. يرجى إرجاعها.`);
     }
 
     setNotifications(notes);
-  }, [loans, settings, currentUser]);
+  }, [loans, currentUser]);
 
   // Auth Handlers
-  const handleLogin = (user: User) => {
-    // Increment visit count
-    const updatedUser = { 
-        ...user, 
-        lastLogin: new Date().toISOString(),
-        visits: (user.visits || 0) + 1
-    };
-    // Update user in list
-    setUsers(prev => prev.map(u => u.id === user.id ? updatedUser : u));
-    setCurrentUser(updatedUser);
-    setCurrentPage(Page.DASHBOARD);
+  const handleLogin = async (id: string, password: string): Promise<string | void> => {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', id)
+        .eq('password', password)
+        .single();
+
+      if (error || !data) {
+          return 'بيانات الدخول غير صحيحة';
+      }
+
+      const user = data as User;
+      if (user.status === 'suspended') {
+          return 'تم إيقاف هذا الحساب. يرجى مراجعة الإدارة.';
+      }
+
+      // Update visit count
+      const updatedUser = { ...user, lastLogin: new Date().toISOString(), visits: (user.visits || 0) + 1 };
+      await supabase.from('users').update({ lastLogin: updatedUser.lastLogin, visits: updatedUser.visits }).eq('id', user.id);
+      
+      setCurrentUser(updatedUser);
+      setCurrentPage(Page.DASHBOARD);
   };
 
   const handleLogout = () => {
@@ -183,98 +169,117 @@ const App: React.FC = () => {
       setCurrentPage(Page.LOGIN);
   };
 
-  // User Management Handlers
-  const handleAddUser = (newUser: User) => {
-      setUsers(prev => [...prev, newUser]);
-      alert('تم إضافة المستخدم بنجاح');
-  };
+  // --- CRUD Handlers (Synced with Supabase) ---
 
-  const handleAddUsers = (newUsers: User[]) => {
-      const existingIds = new Set(users.map(u => u.id));
-      const filtered = newUsers.filter(u => !existingIds.has(u.id));
-      
-      if (filtered.length === 0) {
-          alert('جميع المستخدمين موجودين بالفعل أو القائمة فارغة.');
-          return;
+  // Users
+  const handleAddUser = async (newUser: User) => {
+      const { error } = await supabase.from('users').insert([newUser]);
+      if (!error) {
+          setUsers(prev => [...prev, newUser]);
+          alert('تم إضافة المستخدم بنجاح');
+      } else {
+          alert('حدث خطأ أثناء الإضافة: ' + error.message);
       }
-
-      setUsers(prev => [...prev, ...filtered]);
-      alert(`تم إضافة ${filtered.length} مستخدم بنجاح`);
   };
 
-  const handleUpdateUser = (updatedUser: User) => {
-      setUsers(prev => prev.map(u => u.id === updatedUser.id ? updatedUser : u));
-      if (currentUser && currentUser.id === updatedUser.id) {
-          setCurrentUser(updatedUser);
+  const handleAddUsers = async (newUsers: User[]) => {
+      const { error } = await supabase.from('users').insert(newUsers);
+      if (!error) {
+          setUsers(prev => [...prev, ...newUsers]);
+          alert(`تم إضافة ${newUsers.length} مستخدم بنجاح`);
       }
-      alert('تم تحديث بيانات المستخدم');
   };
 
-  const handleDeleteUser = (userId: string) => {
-      setUsers(prev => prev.filter(u => u.id !== userId));
-  };
-
-  // Book Handlers
-  const handleAddBook = (newBook: Book) => {
-    setBooks(prev => [...prev, newBook]);
-    alert('تم إضافة الكتاب بنجاح');
-  };
-
-  const handleAddBooks = (newBooks: Book[]) => {
-    setBooks(prev => [...prev, ...newBooks]);
-    alert(`تم إضافة ${newBooks.length} كتاب بنجاح`);
-  };
-
-  const handleUpdateBook = (updatedBook: Book) => {
-    setBooks(prev => prev.map(b => b.id === updatedBook.id ? updatedBook : b));
-    alert('تم تحديث بيانات الكتاب');
-  };
-
-  const handleDeleteBook = (id: string) => {
-    setBooks(prev => prev.filter(b => b.id !== id));
-  };
-
-  // Specialization Handlers
-  const handleAddSpecialization = (name: string) => {
-    setSpecializations(prev => [...prev, name]);
-  };
-
-  const handleAddSpecializations = (newSpecs: string[]) => {
-      const existing = new Set(specializations);
-      const filtered = newSpecs.filter(s => !existing.has(s) && s.trim() !== '');
-
-      if (filtered.length === 0) {
-           alert('جميع التخصصات موجودة بالفعل أو القائمة فارغة.');
-           return;
+  const handleUpdateUser = async (updatedUser: User) => {
+      const { error } = await supabase.from('users').update(updatedUser).eq('id', updatedUser.id);
+      if (!error) {
+          setUsers(prev => prev.map(u => u.id === updatedUser.id ? updatedUser : u));
+          if (currentUser && currentUser.id === updatedUser.id) setCurrentUser(updatedUser);
+          alert('تم التحديث بنجاح');
       }
-
-      setSpecializations(prev => [...prev, ...filtered]);
-      alert(`تم إضافة ${filtered.length} تخصص بنجاح`);
   };
 
-  const handleUpdateSpecialization = (oldName: string, newName: string) => {
-    setSpecializations(prev => prev.map(s => s === oldName ? newName : s));
-    setBooks(prev => prev.map(b => b.specialization === oldName ? { ...b, specialization: newName } : b));
+  const handleDeleteUser = async (userId: string) => {
+      const { error } = await supabase.from('users').delete().eq('id', userId);
+      if (!error) setUsers(prev => prev.filter(u => u.id !== userId));
   };
 
-  const handleDeleteSpecialization = (name: string) => {
-    setSpecializations(prev => prev.filter(s => s !== name));
+  // Books
+  const handleAddBook = async (newBook: Book) => {
+      const { error } = await supabase.from('books').insert([newBook]);
+      if (!error) {
+          setBooks(prev => [...prev, newBook]);
+          alert('تم إضافة الكتاب بنجاح');
+      }
   };
 
-  // Lending Handlers
-  const handleIssueBook = (bookId: string, userId: string, durationDays: number, notes?: string) => {
+  const handleAddBooks = async (newBooks: Book[]) => {
+      const { error } = await supabase.from('books').insert(newBooks);
+      if (!error) {
+          setBooks(prev => [...prev, ...newBooks]);
+          alert(`تم إضافة ${newBooks.length} كتاب بنجاح`);
+      }
+  };
+
+  const handleUpdateBook = async (updatedBook: Book) => {
+      const { error } = await supabase.from('books').update(updatedBook).eq('id', updatedBook.id);
+      if (!error) {
+          setBooks(prev => prev.map(b => b.id === updatedBook.id ? updatedBook : b));
+          alert('تم تحديث الكتاب');
+      }
+  };
+
+  const handleDeleteBook = async (id: string) => {
+      const { error } = await supabase.from('books').delete().eq('id', id);
+      if (!error) setBooks(prev => prev.filter(b => b.id !== id));
+  };
+
+  // Specializations
+  const handleAddSpecialization = async (name: string) => {
+      const { error } = await supabase.from('specializations').insert([{ name }]);
+      if (!error) setSpecializations(prev => [...prev, name]);
+  };
+
+  const handleAddSpecializations = async (newSpecs: string[]) => {
+      const rows = newSpecs.map(name => ({ name }));
+      const { error } = await supabase.from('specializations').insert(rows);
+      if (!error) {
+          setSpecializations(prev => [...prev, ...newSpecs]);
+          alert('تم إضافة التخصصات');
+      }
+  };
+
+  const handleUpdateSpecialization = async (oldName: string, newName: string) => {
+      // Supabase doesn't support direct PK update easily, usually delete insert or cascade.
+      // For simplicity in this structure: Update table, then update books
+      const { error } = await supabase.from('specializations').update({ name: newName }).eq('name', oldName);
+      if (!error) {
+          // Also update books with this spec
+          await supabase.from('books').update({ specialization: newName }).eq('specialization', oldName);
+          
+          setSpecializations(prev => prev.map(s => s === oldName ? newName : s));
+          setBooks(prev => prev.map(b => b.specialization === oldName ? { ...b, specialization: newName } : b));
+      }
+  };
+
+  const handleDeleteSpecialization = async (name: string) => {
+      const { error } = await supabase.from('specializations').delete().eq('name', name);
+      if (!error) setSpecializations(prev => prev.filter(s => s !== name));
+  };
+
+  // Loans
+  const handleIssueBook = async (bookId: string, userId: string, durationDays: number, notes?: string) => {
     const book = books.find(b => b.id === bookId);
     const user = users.find(u => u.id === userId);
 
     if (!book || !user) return;
-    
     if (book.remainingCopies <= 0) {
-        alert('عذراً، لا توجد نسخ متبقية من هذا الكتاب.');
+        alert('لا توجد نسخ متبقية');
         return;
     }
 
     const newLoan: Loan = {
-        id: Date.now().toString(),
+        id: crypto.randomUUID(),
         bookId: book.id,
         bookTitle: book.title,
         userId: user.id,
@@ -282,7 +287,6 @@ const App: React.FC = () => {
         issueDate: new Date().toISOString(),
         dueDate: new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000).toISOString(),
         status: 'active',
-        // Save Original Location
         originalLocation: {
             cabinet: book.cabinet,
             bookShelfNumber: book.bookShelfNumber,
@@ -291,32 +295,51 @@ const App: React.FC = () => {
         notes: notes
     };
 
-    setLoans(prev => [...prev, newLoan]);
-    setBooks(prev => prev.map(b => b.id === bookId ? { ...b, remainingCopies: b.remainingCopies - 1 } : b));
-  };
-
-  const handleReturnBook = (loanId: string, condition: 'excellent' | 'good' | 'damaged' | 'lost', penalty: number, notes: string) => {
-    const loan = loans.find(l => l.id === loanId);
-    if (!loan) return;
-
-    setLoans(prev => prev.map(l => l.id === loanId ? { 
-        ...l, 
-        status: condition === 'lost' ? 'lost' : 'returned', 
-        returnDate: new Date().toISOString(),
-        conditionOnReturn: condition,
-        penaltyAmount: penalty,
-        notes: notes ? (l.notes + ' | ' + notes) : l.notes
-    } : l));
-    
-    // Increment remaining copies if not lost
-    if (condition !== 'lost') {
-        setBooks(prev => prev.map(b => b.id === loan.bookId ? { ...b, remainingCopies: b.remainingCopies + 1 } : b));
+    const { error } = await supabase.from('loans').insert([newLoan]);
+    if (!error) {
+        // Update book copies
+        await supabase.from('books').update({ remainingCopies: book.remainingCopies - 1 }).eq('id', book.id);
+        
+        setLoans(prev => [...prev, newLoan]);
+        setBooks(prev => prev.map(b => b.id === bookId ? { ...b, remainingCopies: b.remainingCopies - 1 } : b));
     }
   };
 
-  // Settings Handlers
-  const handleUpdateSettings = (newSettings: LibrarySettings) => {
-      setSettings(newSettings);
+  const handleReturnBook = async (loanId: string, condition: 'excellent' | 'good' | 'damaged' | 'lost', penalty: number, notes: string) => {
+    const loan = loans.find(l => l.id === loanId);
+    if (!loan) return;
+
+    // We use explicit object for updates to ensure types are correct
+    const updates = {
+        status: condition === 'lost' ? 'lost' : 'returned',
+        returnDate: new Date().toISOString(),
+        conditionOnReturn: condition,
+        penaltyAmount: penalty,
+        notes: notes ? (loan.notes ? `${loan.notes} | ${notes}` : notes) : loan.notes
+    };
+
+    const { error } = await supabase.from('loans').update(updates).eq('id', loanId);
+    if (!error) {
+        setLoans(prev => prev.map(l => l.id === loanId ? { ...l, ...updates } as Loan : l));
+        
+        if (condition !== 'lost') {
+            const book = books.find(b => b.id === loan.bookId);
+            if (book) {
+                await supabase.from('books').update({ remainingCopies: book.remainingCopies + 1 }).eq('id', book.id);
+                setBooks(prev => prev.map(b => b.id === book.id ? { ...b, remainingCopies: b.remainingCopies + 1 } : b));
+            }
+        }
+    }
+  };
+
+  // Settings
+  const handleUpdateSettings = async (newSettings: LibrarySettings) => {
+      if (settingsId) {
+          const { error } = await supabase.from('settings').update({ config: newSettings }).eq('id', settingsId);
+          if (!error) {
+              setSettings(newSettings);
+          }
+      }
   };
 
   const handleBackup = () => {
@@ -327,35 +350,23 @@ const App: React.FC = () => {
     a.href = url;
     a.download = `library_backup_${new Date().toISOString().split('T')[0]}.json`;
     a.click();
-    
-    setSettings(prev => ({ ...prev, lastBackupDate: new Date().toISOString() }));
-    alert('تم تحميل النسخة الاحتياطية بنجاح');
   };
 
   const handleRestore = (file: File) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const data = JSON.parse(e.target?.result as string);
-        if (data.books && data.loans && data.users) {
-            setBooks(data.books);
-            setLoans(data.loans);
-            setUsers(data.users);
-            if(data.settings) setSettings(data.settings);
-            if(data.specializations) setSpecializations(data.specializations);
-            alert('تم استعادة البيانات بنجاح');
-        } else {
-            alert('ملف غير صالح');
-        }
-      } catch (err) {
-        alert('خطأ في قراءة الملف');
-      }
-    };
-    reader.readAsText(file);
+      alert('لاستعادة نسخة احتياطية كاملة، يرجى التواصل مع مسؤول قاعدة البيانات.');
   };
 
+  if (isLoading) {
+      return (
+          <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 gap-4">
+              <Loader2 className="w-12 h-12 animate-spin text-[#4A90E2]" />
+              <p className="text-slate-500 font-bold">جاري الاتصال بقاعدة البيانات...</p>
+          </div>
+      );
+  }
+
   if (!currentUser || currentPage === Page.LOGIN) {
-      return <Login users={users} onLogin={handleLogin} libraryName={settings.name} />;
+      return <Login onLogin={handleLogin} libraryName={settings.name} />;
   }
 
   const renderContent = () => {

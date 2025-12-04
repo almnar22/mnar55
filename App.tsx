@@ -73,7 +73,6 @@ const App: React.FC = () => {
 
   // 1. Initial Load: Only fetch Settings (Fast)
   const fetchPublicSettings = async () => {
-      setIsLoading(true);
       try {
           const { data: settingsData } = await supabase.from('settings').select('*').limit(1).single();
           if (settingsData && settingsData.config) {
@@ -86,14 +85,11 @@ const App: React.FC = () => {
           }
       } catch (error) {
           console.error("Error fetching settings:", error);
-      } finally {
-          setIsLoading(false);
       }
   };
 
   // 2. Heavy Load: Fetch Books, Users, Loans (Parallel) - Only after login
   const fetchProtectedData = async () => {
-      setIsLoginLoading(true);
       try {
           // Use Promise.all to fetch data in parallel instead of sequentially
           const [booksResult, usersResult, loansResult, specsResult] = await Promise.all([
@@ -120,13 +116,48 @@ const App: React.FC = () => {
 
       } catch (error) {
           console.error("Error fetching protected data:", error);
-      } finally {
-          setIsLoginLoading(false);
       }
   };
 
   useEffect(() => {
-      fetchPublicSettings();
+      const initApp = async () => {
+          setIsLoading(true);
+          // 1. Fetch Settings first
+          await fetchPublicSettings();
+
+          // 2. Check for existing session in localStorage
+          const storedUserId = localStorage.getItem('library_user_id');
+          
+          if (storedUserId) {
+              setIsLoginLoading(true); // Show loading state on login screen
+              try {
+                  const { data: user, error } = await supabase
+                      .from('users')
+                      .select('*')
+                      .eq('id', storedUserId)
+                      .single();
+
+                  if (user && !error && user.status !== 'suspended') {
+                      setCurrentUser(user as User);
+                      setCurrentPage(Page.DASHBOARD);
+                      // Since we restored session, fetch data immediately
+                      await fetchProtectedData();
+                  } else {
+                      // Invalid session or user suspended/deleted
+                      localStorage.removeItem('library_user_id');
+                  }
+              } catch (err) {
+                  console.error("Session restoration failed", err);
+                  localStorage.removeItem('library_user_id');
+              } finally {
+                  setIsLoginLoading(false);
+              }
+          }
+          
+          setIsLoading(false);
+      };
+
+      initApp();
   }, []);
 
   // Check for notifications
@@ -170,15 +201,21 @@ const App: React.FC = () => {
       // Don't await this update to block UI, let it run in background
       supabase.from('users').update({ lastLogin: updatedUser.lastLogin, visits: updatedUser.visits }).eq('id', user.id).then();
       
+      // 3. Persist Session
+      localStorage.setItem('library_user_id', user.id);
+
       setCurrentUser(updatedUser);
       
-      // 3. Fetch Data NOW
+      // 4. Fetch Data NOW
+      setIsLoginLoading(true);
       await fetchProtectedData();
+      setIsLoginLoading(false);
       
       setCurrentPage(Page.DASHBOARD);
   };
 
   const handleLogout = () => {
+      localStorage.removeItem('library_user_id');
       setCurrentUser(null);
       setCurrentPage(Page.LOGIN);
       // Optional: clear data to free memory if needed, but keeping it makes re-login faster

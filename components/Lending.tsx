@@ -182,12 +182,6 @@ export const Lending: React.FC<LendingProps> = ({ books, loans, users, currentUs
           // Handle Excel tabs and remove potential quotes
           const cols = row.split('\t').map(c => c.trim().replace(/^"|"$/g, ''));
           
-          // New Format Matching "Issue Book" Modal:
-          // Col 0: Student (ID or Name)
-          // Col 1: Book (Code or Title)
-          // Col 2: Duration (Days) - Optional, default 14
-          // Col 3: Notes - Optional
-          
           if (cols.length < 2) return;
 
           const studentInput = cols[0];
@@ -196,13 +190,10 @@ export const Lending: React.FC<LendingProps> = ({ books, loans, users, currentUs
           const notesInput = cols[3] || '';
 
           // --- Matching Logic (Same as Search) ---
-          
-          // 1. Find User: Check ID exact -> Name exact -> Name fuzzy
           let user = users.find(u => u.id === studentInput);
           if (!user) user = users.find(u => u.name.toLowerCase() === studentInput.toLowerCase());
           if (!user) user = users.find(u => u.name.includes(studentInput) || studentInput.includes(u.name));
 
-          // 2. Find Book: Check Code exact -> Title exact -> Title fuzzy
           let book = books.find(b => b.code === bookInput);
           if (!book) book = books.find(b => b.title.toLowerCase() === bookInput.toLowerCase());
           if (!book && bookInput) book = books.find(b => b.title.includes(bookInput));
@@ -241,7 +232,6 @@ export const Lending: React.FC<LendingProps> = ({ books, loans, users, currentUs
 
   const handleConfirmBulk = () => {
       if (onAddBulkLoans) {
-          // Filter out invalid ones
           const validLoans = parsedBulkLoans.filter(l => !l.error);
           
           if (validLoans.length === 0) {
@@ -255,7 +245,6 @@ export const Lending: React.FC<LendingProps> = ({ books, loans, users, currentUs
               }
           }
           
-          // Remove error field before sending
           const cleanLoans = validLoans.map(({ error, ...loan }) => loan);
           onAddBulkLoans(cleanLoans);
           
@@ -274,96 +263,58 @@ export const Lending: React.FC<LendingProps> = ({ books, loans, users, currentUs
                 <p className="opacity-90 text-blue-100">سجل استعارتك الحالي والسابق</p>
              </header>
              
-             <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hidden md:block">
-                <table className="w-full text-right">
-                    <thead className="bg-[#4A90E2] text-white">
-                        <tr>
-                            <th className="p-4 font-semibold">الكتاب</th>
-                            <th className="p-4 font-semibold">تاريخ الاستعارة</th>
-                            <th className="p-4 font-semibold">موعد الإرجاع</th>
-                            <th className="p-4 font-semibold">الحالة</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                        {filteredLoans.map(loan => {
-                             const isOverdue = loan.status === 'overdue';
-                             return (
-                                <tr key={loan.id} className="hover:bg-slate-50">
-                                    <td className="p-4 font-bold text-slate-800">{loan.bookTitle}</td>
-                                    <td className="p-4 text-slate-600 text-sm">{new Date(loan.issueDate).toLocaleDateString('ar-EG-u-nu-latn')}</td>
-                                    <td className="p-4 text-slate-600 text-sm">{new Date(loan.dueDate).toLocaleDateString('ar-EG-u-nu-latn')}</td>
-                                    <td className="p-4">
-                                        {loan.status === 'returned' ? (
-                                             <span className="text-xs bg-slate-100 text-slate-500 px-3 py-1 rounded-full border border-slate-200">تم الإرجاع</span>
-                                        ) : isOverdue ? (
-                                            <span className="flex items-center gap-1 text-xs font-bold text-white bg-rose-500 px-3 py-1 rounded-full w-fit">
-                                                <AlertTriangle className="w-3 h-3" /> متأخر
-                                            </span>
-                                        ) : (
-                                            <span className="text-xs font-bold text-[#4A90E2] bg-blue-50 px-3 py-1 rounded-full border border-blue-100">نشط (لديك)</span>
-                                        )}
-                                    </td>
-                                </tr>
-                             )
-                        })}
-                        {filteredLoans.length === 0 && (
-                            <tr>
-                                <td colSpan={4} className="p-12 text-center text-slate-500">
-                                    <div className="flex flex-col items-center gap-3">
-                                        <BookOpen className="w-12 h-12 text-slate-200" />
-                                        <p className="text-lg">لا يوجد لديك أي استعارات مسجلة</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
-             </div>
-
-             {/* Student Mobile View */}
-             <div className="md:hidden space-y-4">
+             {/* Student Cards Grid */}
+             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                  {filteredLoans.map(loan => {
                       const isOverdue = loan.status === 'overdue';
                       return (
-                         <div key={loan.id} className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-                             <div className="flex justify-between items-start mb-3">
-                                 <h4 className="font-bold text-slate-800 line-clamp-2">{loan.bookTitle}</h4>
-                                 {loan.status === 'returned' ? (
-                                      <span className="text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded-full border border-slate-200 whitespace-nowrap">تم الإرجاع</span>
-                                 ) : isOverdue ? (
-                                     <span className="text-[10px] font-bold text-white bg-rose-500 px-2 py-1 rounded-full whitespace-nowrap">متأخر</span>
-                                 ) : (
-                                     <span className="text-[10px] font-bold text-[#4A90E2] bg-blue-50 px-2 py-1 rounded-full border border-blue-100 whitespace-nowrap">نشط</span>
-                                 )}
+                         <div key={loan.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden relative group">
+                             
+                             <div className="absolute top-3 left-3 z-10">
+                                {loan.status === 'returned' ? (
+                                     <span className="text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded-full border border-slate-200 whitespace-nowrap">تم الإرجاع</span>
+                                ) : isOverdue ? (
+                                    <span className="text-[10px] font-bold text-white bg-rose-500 px-2 py-1 rounded-full whitespace-nowrap">متأخر</span>
+                                ) : (
+                                    <span className="text-[10px] font-bold text-[#4A90E2] bg-blue-50 px-2 py-1 rounded-full border border-blue-100 whitespace-nowrap">نشط</span>
+                                )}
                              </div>
-                             <div className="grid grid-cols-2 gap-2 text-xs text-slate-600 mb-2">
-                                 <div>
-                                     <span className="block text-slate-400 text-[10px]">تاريخ الاستعارة</span>
-                                     {new Date(loan.issueDate).toLocaleDateString('ar-EG-u-nu-latn')}
+
+                             <div className="p-5 pt-10">
+                                 <div className="flex items-center gap-4 mb-4">
+                                     <div className="w-12 h-12 rounded-lg bg-orange-100 flex items-center justify-center text-orange-600 shrink-0">
+                                         <BookOpen className="w-6 h-6" />
+                                     </div>
+                                     <div>
+                                         <h4 className="font-bold text-slate-800 line-clamp-2 leading-tight">{loan.bookTitle}</h4>
+                                         <span className="text-xs text-slate-400 mt-1 block">تاريخ الإعارة: {new Date(loan.issueDate).toLocaleDateString('ar-EG-u-nu-latn')}</span>
+                                     </div>
                                  </div>
-                                 <div>
-                                     <span className="block text-slate-400 text-[10px]">موعد الإرجاع</span>
-                                     {new Date(loan.dueDate).toLocaleDateString('ar-EG-u-nu-latn')}
+
+                                 <div className="bg-slate-50 rounded-lg p-3 text-sm text-center border border-slate-100">
+                                     <span className="block text-slate-400 text-xs mb-1">موعد الإرجاع</span>
+                                     <span className={`font-bold ${isOverdue && loan.status !== 'returned' ? 'text-rose-600' : 'text-slate-700'}`}>
+                                         {new Date(loan.dueDate).toLocaleDateString('ar-EG-u-nu-latn')}
+                                     </span>
                                  </div>
                              </div>
                          </div>
                       )
                  })}
                  {filteredLoans.length === 0 && (
-                    <div className="p-8 text-center text-slate-500 bg-white rounded-xl border border-slate-200">
-                        <BookOpen className="w-8 h-8 text-slate-200 mx-auto mb-2" />
+                    <div className="p-12 text-center text-slate-500 bg-white rounded-xl border border-slate-200 col-span-full">
+                        <BookOpen className="w-12 h-12 text-slate-200 mx-auto mb-2" />
                         <p>لا توجد استعارات</p>
                     </div>
                  )}
              </div>
-
           </div>
       )
   }
 
   // --- Admin View ---
   return (
-    <div className="space-y-6 animate-fade-in font-sans pb-8">
+    <div className="space-y-6 animate-fade-in font-sans pb-12">
        {/* Header */}
       <header className="bg-gradient-to-br from-[#4A90E2] to-[#2C6FB7] text-white p-8 rounded-2xl shadow-lg shadow-blue-500/20 text-center mb-8">
         <h1 className="text-3xl font-bold mb-2 flex items-center justify-center gap-3">
@@ -476,246 +427,125 @@ export const Lending: React.FC<LendingProps> = ({ books, loans, users, currentUs
          </div>
       </div>
 
-      {/* Records Section */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden min-h-[500px]">
-         <div className="p-4 md:p-6 border-b-2 border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4">
-            <h2 className="text-xl font-bold text-[#2C6FB7] flex items-center gap-2">
-                <FileText className="w-6 h-6" /> سجلات الإعارة
-            </h2>
-            
-            <div className="flex gap-2 overflow-x-auto w-full md:w-auto no-scrollbar pb-2 md:pb-0">
+      {/* Filter Tabs */}
+      <div className="bg-white p-2 rounded-xl shadow-sm border border-slate-100 flex gap-2 overflow-x-auto no-scrollbar mb-6">
+            {(['all', 'active', 'overdue', 'returned'] as const).map(st => (
                 <button 
-                    onClick={() => setFilterStatus('all')}
-                    className={`px-4 md:px-5 py-2 rounded-full border-2 font-medium text-sm transition whitespace-nowrap ${filterStatus === 'all' ? 'bg-[#4A90E2] text-white border-[#4A90E2]' : 'bg-white text-slate-500 border-slate-200 hover:border-[#4A90E2] hover:text-[#4A90E2]'}`}
+                    key={st}
+                    onClick={() => setFilterStatus(st)}
+                    className={`flex-1 px-4 py-3 rounded-lg font-bold text-sm transition whitespace-nowrap text-center ${filterStatus === st ? 'bg-[#4A90E2] text-white shadow-md' : 'bg-transparent text-slate-500 hover:bg-slate-50'}`}
                 >
-                    الكل
+                    {st === 'all' && 'الكل'}
+                    {st === 'active' && 'نشطة'}
+                    {st === 'overdue' && 'متأخرة'}
+                    {st === 'returned' && 'منتهية'}
                 </button>
-                <button 
-                    onClick={() => setFilterStatus('active')}
-                    className={`px-4 md:px-5 py-2 rounded-full border-2 font-medium text-sm transition whitespace-nowrap ${filterStatus === 'active' ? 'bg-[#4A90E2] text-white border-[#4A90E2]' : 'bg-white text-slate-500 border-slate-200 hover:border-[#4A90E2] hover:text-[#4A90E2]'}`}
-                >
-                    نشطة
-                </button>
-                <button 
-                    onClick={() => setFilterStatus('overdue')}
-                    className={`px-4 md:px-5 py-2 rounded-full border-2 font-medium text-sm transition whitespace-nowrap ${filterStatus === 'overdue' ? 'bg-[#4A90E2] text-white border-[#4A90E2]' : 'bg-white text-slate-500 border-slate-200 hover:border-[#4A90E2] hover:text-[#4A90E2]'}`}
-                >
-                    متأخرة
-                </button>
-                <button 
-                    onClick={() => setFilterStatus('returned')}
-                    className={`px-4 md:px-5 py-2 rounded-full border-2 font-medium text-sm transition whitespace-nowrap ${filterStatus === 'returned' ? 'bg-[#4A90E2] text-white border-[#4A90E2]' : 'bg-white text-slate-500 border-slate-200 hover:border-[#4A90E2] hover:text-[#4A90E2]'}`}
-                >
-                    منتهية
-                </button>
-            </div>
-         </div>
+            ))}
+      </div>
 
-         {/* Desktop Table View */}
-         <div className="overflow-x-auto hidden md:block">
-            <table className="w-full text-right text-sm border-separate border-spacing-0">
-                <thead>
-                    <tr>
-                        <th className="bg-gradient-to-r from-[#4A90E2] to-[#2C6FB7] text-white p-4 font-semibold border-b-2 border-[#2C6FB7] sticky top-0 first:rounded-tr-lg">اسم الطالب</th>
-                        <th className="bg-gradient-to-r from-[#4A90E2] to-[#2C6FB7] text-white p-4 font-semibold border-b-2 border-[#2C6FB7] sticky top-0">الكتاب</th>
-                        <th className="bg-gradient-to-r from-[#4A90E2] to-[#2C6FB7] text-white p-4 font-semibold border-b-2 border-[#2C6FB7] sticky top-0">رقم الكتاب</th>
-                        <th className="bg-gradient-to-r from-[#4A90E2] to-[#2C6FB7] text-white p-4 font-semibold border-b-2 border-[#2C6FB7] sticky top-0">الخزانة</th>
-                        <th className="bg-gradient-to-r from-[#4A90E2] to-[#2C6FB7] text-white p-4 font-semibold border-b-2 border-[#2C6FB7] sticky top-0">تاريخ الإعارة</th>
-                        <th className="bg-gradient-to-r from-[#4A90E2] to-[#2C6FB7] text-white p-4 font-semibold border-b-2 border-[#2C6FB7] sticky top-0">موعد الإرجاع</th>
-                        <th className="bg-gradient-to-r from-[#4A90E2] to-[#2C6FB7] text-white p-4 font-semibold border-b-2 border-[#2C6FB7] sticky top-0">الحالة</th>
-                        <th className="bg-gradient-to-r from-[#4A90E2] to-[#2C6FB7] text-white p-4 font-semibold border-b-2 border-[#2C6FB7] sticky top-0 last:rounded-tl-lg">إجراء</th>
-                    </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                    {filteredLoans.map(loan => {
-                        const isOverdue = loan.status === 'overdue';
-                        const isReturned = loan.status === 'returned';
-                        const daysOverdue = getDaysOverdue(loan.dueDate);
-                        
-                        return (
-                        <tr key={loan.id} className="hover:bg-blue-50/30 transition duration-150">
-                            <td className="p-4">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#4A90E2] to-[#2C6FB7] flex items-center justify-center text-white font-bold text-lg shrink-0">
-                                        {loan.studentName.charAt(0)}
-                                    </div>
-                                    <div>
-                                        <div className="font-bold text-slate-800">{loan.studentName}</div>
-                                        <small className="text-slate-500">{loan.userId}</small>
-                                    </div>
-                                </div>
-                            </td>
-                            <td className="p-4">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#FFA726] to-[#F57C00] flex items-center justify-center text-white text-lg shrink-0">
-                                        <BookOpen className="w-5 h-5" />
-                                    </div>
-                                    <div className="max-w-[200px]">
-                                        <div className="font-bold text-slate-800 truncate" title={loan.bookTitle}>{loan.bookTitle}</div>
-                                        <small className="text-slate-500">كود: {loan.bookId}</small>
-                                    </div>
-                                </div>
-                            </td>
-                            <td className="p-4">
-                                <div className="inline-flex items-center gap-1.5 bg-[#E3F2FD] px-3 py-1.5 rounded-full text-sm font-medium text-[#2C6FB7]">
-                                    <MapPin className="w-3 h-3" />
-                                    <span>{loan.originalLocation?.bookShelfNumber || '-'}</span>
-                                </div>
-                            </td>
-                            <td className="p-4">
-                                <div className="inline-flex items-center gap-1.5 bg-[#E3F2FD] px-3 py-1.5 rounded-full text-sm font-medium text-[#2C6FB7]">
-                                    <Layers className="w-3 h-3" />
-                                    <span>{loan.originalLocation?.cabinet || '-'}</span>
-                                </div>
-                            </td>
-                            <td className="p-4 text-slate-600 font-medium">{new Date(loan.issueDate).toLocaleDateString('ar-EG-u-nu-latn')}</td>
-                            <td className="p-4">
-                                <div className="text-slate-600 font-medium">{new Date(loan.dueDate).toLocaleDateString('ar-EG-u-nu-latn')}</div>
-                                {isOverdue && !isReturned && (
-                                    <small className="text-rose-600 font-bold">متأخر {daysOverdue} يوم</small>
-                                )}
-                                {!isOverdue && !isReturned && (
-                                    <small className="text-emerald-600 font-bold">متبقي {Math.abs(getDaysOverdue(loan.dueDate))} يوم</small>
-                                )}
-                            </td>
-                            <td className="p-4">
-                                {isReturned ? (
-                                    <span className="inline-block px-4 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700">تم الإرجاع</span>
-                                ) : isOverdue ? (
-                                    <span className="inline-block px-4 py-1.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700">متأخر</span>
-                                ) : (
-                                    <span className="inline-block px-4 py-1.5 rounded-full text-xs font-bold bg-orange-50 text-orange-700">نشطة</span>
-                                )}
-                            </td>
-                            <td className="p-4">
-                                <div className="flex gap-2">
-                                    {!isReturned && (
-                                        <button 
-                                            onClick={() => openReturnModal(loan)}
-                                            className="px-3 py-1.5 rounded-lg bg-[#FFA726] hover:bg-[#F57C00] text-white font-bold text-xs flex items-center gap-1 transition"
-                                        >
-                                            <RotateCcw className="w-3 h-3" /> إرجاع
-                                        </button>
-                                    )}
-                                    <button 
-                                        onClick={() => setViewLoan(loan)}
-                                        className="px-3 py-1.5 rounded-lg bg-[#4A90E2] hover:bg-[#2C6FB7] text-white font-bold text-xs flex items-center gap-1 transition"
-                                    >
-                                        <FileText className="w-3 h-3" /> تفاصيل
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    )})}
-                    {filteredLoans.length === 0 && (
-                        <tr>
-                            <td colSpan={8} className="py-16 text-center text-slate-500">
-                                <div className="flex flex-col items-center gap-4">
-                                    <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center">
-                                        <Search className="w-8 h-8 text-slate-300" />
-                                    </div>
-                                    <p className="text-lg font-medium">لا توجد سجلات مطابقة للبحث</p>
-                                </div>
-                            </td>
-                        </tr>
-                    )}
-                </tbody>
-            </table>
-         </div>
+      {/* Records Grid Cards (Unified View) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+         {filteredLoans.map(loan => {
+                const isOverdue = loan.status === 'overdue';
+                const isReturned = loan.status === 'returned';
+                const daysOverdue = getDaysOverdue(loan.dueDate);
+                
+                return (
+                <div key={loan.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 hover:shadow-lg transition-shadow duration-300 overflow-hidden flex flex-col relative group">
+                    
+                    {/* Status Badge */}
+                    <div className="absolute top-3 left-3 z-10">
+                        {isReturned ? (
+                            <span className="inline-block px-3 py-1 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100">تم الإرجاع</span>
+                        ) : isOverdue ? (
+                            <span className="inline-block px-3 py-1 rounded-md text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-100 animate-pulse">متأخر</span>
+                        ) : (
+                            <span className="inline-block px-3 py-1 rounded-md text-[10px] font-bold bg-orange-50 text-orange-700 border border-orange-100">نشطة</span>
+                        )}
+                    </div>
 
-         {/* Mobile Card View */}
-         <div className="md:hidden p-4 space-y-4">
-             {filteredLoans.map(loan => {
-                  const isOverdue = loan.status === 'overdue';
-                  const isReturned = loan.status === 'returned';
-                  const daysOverdue = getDaysOverdue(loan.dueDate);
+                    <div className="p-5 pt-10 flex flex-col h-full">
+                        {/* Student Info */}
+                        <div className="flex items-center gap-3 mb-4 border-b border-slate-50 pb-3">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#4A90E2] to-[#2C6FB7] flex items-center justify-center text-white font-bold text-sm shrink-0 shadow-sm">
+                                {loan.studentName.charAt(0)}
+                            </div>
+                            <div className="min-w-0">
+                                <h4 className="font-bold text-slate-800 text-sm truncate" title={loan.studentName}>{loan.studentName}</h4>
+                                <span className="text-xs text-slate-400 block font-mono">{loan.userId}</span>
+                            </div>
+                        </div>
 
-                  return (
-                     <div key={loan.id} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                         <div className="flex justify-between items-start mb-3 border-b border-slate-50 pb-2">
-                             <div className="flex items-center gap-2">
-                                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#4A90E2] to-[#2C6FB7] flex items-center justify-center text-white font-bold text-sm shrink-0">
-                                     {loan.studentName.charAt(0)}
-                                 </div>
-                                 <div>
-                                     <h4 className="font-bold text-slate-800 text-sm">{loan.studentName}</h4>
-                                     <span className="text-xs text-slate-400 block">{loan.userId}</span>
-                                 </div>
+                        {/* Book Info */}
+                        <div className="flex items-start gap-3 mb-4">
+                            <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center text-orange-600 shrink-0">
+                                <BookOpen className="w-5 h-5" />
+                            </div>
+                            <div className="min-w-0">
+                                <h4 className="font-bold text-slate-800 text-sm line-clamp-2" title={loan.bookTitle}>{loan.bookTitle}</h4>
+                                <span className="text-[10px] text-slate-400 block mt-1">كود: {loan.bookId}</span>
+                            </div>
+                        </div>
+
+                        {/* Location Tag */}
+                        <div className="mb-4 flex flex-wrap gap-1">
+                             <span className="inline-flex items-center gap-1 bg-[#E3F2FD] px-2 py-1 rounded-md text-[10px] text-[#2C6FB7]">
+                                <MapPin className="w-3 h-3" /> {loan.originalLocation?.cabinet || '-'}
+                             </span>
+                             <span className="inline-flex items-center gap-1 bg-[#E3F2FD] px-2 py-1 rounded-md text-[10px] text-[#2C6FB7]">
+                                <Layers className="w-3 h-3" /> {loan.originalLocation?.bookShelfNumber || '-'}
+                             </span>
+                        </div>
+
+                        {/* Dates Grid */}
+                        <div className="grid grid-cols-2 gap-2 mt-auto mb-4 text-xs">
+                             <div className="bg-slate-50 p-2 rounded border border-slate-100 text-center">
+                                 <span className="block text-slate-400 mb-1">الإعارة</span>
+                                 <span className="font-bold text-slate-700">{new Date(loan.issueDate).toLocaleDateString('ar-EG-u-nu-latn')}</span>
                              </div>
-                             {isReturned ? (
-                                  <span className="text-[10px] bg-emerald-50 text-emerald-600 px-2 py-1 rounded-full border border-emerald-100 font-bold whitespace-nowrap">تم الإرجاع</span>
-                             ) : isOverdue ? (
-                                  <span className="text-[10px] bg-rose-50 text-rose-600 px-2 py-1 rounded-full border border-rose-100 font-bold whitespace-nowrap">متأخر {daysOverdue} يوم</span>
-                             ) : (
-                                  <span className="text-[10px] bg-orange-50 text-orange-600 px-2 py-1 rounded-full border border-orange-100 font-bold whitespace-nowrap">نشطة</span>
-                             )}
-                         </div>
-
-                         <div className="bg-slate-50 p-2.5 rounded-lg mb-3">
-                             <p className="font-bold text-slate-700 text-sm flex items-center gap-2 line-clamp-1">
-                                 <BookOpen className="w-3.5 h-3.5 text-slate-400"/>
-                                 {loan.bookTitle}
-                             </p>
-                             <div className="flex justify-between mt-1 text-[10px] text-slate-500">
-                                 <span>كود: {loan.bookId}</span>
-                                 <span className="flex items-center gap-1"><MapPin className="w-3 h-3"/> {loan.originalLocation?.cabinet} - {loan.originalLocation?.bookShelfNumber}</span>
-                             </div>
-                         </div>
-
-                         <div className="grid grid-cols-2 gap-2 text-xs mb-3">
-                             <div className="bg-white border border-slate-100 p-2 rounded text-center">
-                                 <span className="block text-slate-400 text-[10px] mb-0.5">الإعارة</span>
-                                 <span className="font-medium text-slate-700">{new Date(loan.issueDate).toLocaleDateString('ar-EG-u-nu-latn')}</span>
-                             </div>
-                             <div className="bg-white border border-slate-100 p-2 rounded text-center">
-                                 <span className="block text-slate-400 text-[10px] mb-0.5">الإرجاع</span>
-                                 <span className={`font-medium ${isOverdue && !isReturned ? 'text-rose-600' : 'text-slate-700'}`}>
+                             <div className={`bg-slate-50 p-2 rounded border border-slate-100 text-center ${isOverdue && !isReturned ? 'bg-red-50 border-red-100' : ''}`}>
+                                 <span className="block text-slate-400 mb-1">الإرجاع</span>
+                                 <span className={`font-bold ${isOverdue && !isReturned ? 'text-rose-600' : 'text-slate-700'}`}>
                                      {new Date(loan.dueDate).toLocaleDateString('ar-EG-u-nu-latn')}
                                  </span>
                              </div>
-                         </div>
+                        </div>
 
-                         <div className="flex gap-2">
-                              {!isReturned && (
-                                  <button 
-                                      onClick={() => openReturnModal(loan)}
-                                      className="flex-1 py-2 rounded-lg bg-[#FFA726] text-white font-bold text-xs flex items-center justify-center gap-1 shadow-sm"
-                                  >
-                                      <RotateCcw className="w-3 h-3" /> إرجاع
-                                  </button>
-                              )}
-                              <button 
-                                  onClick={() => setViewLoan(loan)}
-                                  className="flex-1 py-2 rounded-lg bg-blue-50 text-blue-600 font-bold text-xs flex items-center justify-center gap-1 border border-blue-100"
-                              >
-                                  <FileText className="w-3 h-3" /> تفاصيل
-                              </button>
-                         </div>
-                     </div>
-                  )
-             })}
-             {filteredLoans.length === 0 && (
-                <div className="p-8 text-center text-slate-500">
-                     <p>لا توجد سجلات</p>
+                        {/* Footer Actions */}
+                        <div className="pt-3 border-t border-slate-100 flex gap-2">
+                            {!isReturned && (
+                                <button 
+                                    onClick={() => openReturnModal(loan)}
+                                    className="flex-1 py-2 rounded-lg bg-[#FFA726] hover:bg-[#F57C00] text-white font-bold text-xs flex items-center justify-center gap-1 shadow-sm transition"
+                                >
+                                    <RotateCcw className="w-3 h-3" /> إرجاع
+                                </button>
+                            )}
+                            <button 
+                                onClick={() => setViewLoan(loan)}
+                                className={`flex-1 py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-1 border transition ${!isReturned ? 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50' : 'bg-[#4A90E2] text-white hover:bg-[#2C6FB7] w-full border-transparent'}`}
+                            >
+                                <FileText className="w-3 h-3" /> تفاصيل
+                            </button>
+                        </div>
+                    </div>
                 </div>
-             )}
-         </div>
-
-         {/* Pagination (Mock) */}
-         <div className="p-6 border-t border-slate-100 flex justify-center gap-2">
-            <button className="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 transition">السابق</button>
-            <button className="px-4 py-2 bg-[#4A90E2] text-white rounded-lg font-bold">1</button>
-            <button className="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 transition">2</button>
-            <button className="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 transition">3</button>
-            <button className="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 transition">التالي</button>
-         </div>
+            )})}
+            {filteredLoans.length === 0 && (
+                <div className="p-12 text-center text-slate-500 bg-white rounded-2xl border border-slate-200 shadow-sm col-span-full">
+                    <p>لا توجد سجلات مطابقة للبحث</p>
+                </div>
+            )}
       </div>
 
-      {/* Footer */}
-      <footer className="text-center pt-8 mt-8 border-t border-slate-200 text-slate-500 text-sm">
-        <p className="font-bold mb-1">نظام إعارة الكتب - مكتبة الكلية | تم تحديث البيانات: {new Date().toLocaleTimeString('ar-EG-u-nu-latn', {hour:'2-digit', minute:'2-digit'})}</p>
-        <p>إجمالي السجلات المعروضة: {filteredLoans.length} سجل</p>
-      </footer>
+      {/* Mock Pagination */}
+      <div className="p-6 flex justify-center gap-2 mt-4">
+         <button className="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition font-bold">السابق</button>
+         <button className="px-4 py-2 bg-[#4A90E2] text-white rounded-lg font-bold shadow-lg shadow-blue-200">1</button>
+         <button className="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition font-bold">2</button>
+         <button className="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition font-bold">3</button>
+         <button className="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition font-bold">التالي</button>
+      </div>
 
 
       {/* --- New Borrowing Modal --- */}

@@ -3,7 +3,7 @@ import React, { useState, useMemo } from 'react';
 import { User, UserRole } from '../types';
 import { 
     Users, Search, Plus, Edit2, Shield, Trash2, FileSpreadsheet, 
-    Check, X, RefreshCw, Key, Download, Filter, Save, GraduationCap, Briefcase, PauseCircle, Loader2
+    Check, X, RefreshCw, Key, Download, Filter, Save, GraduationCap, Briefcase, PauseCircle, Loader2, Mail, Phone, Calendar
 } from 'lucide-react';
 
 interface UserManagementProps {
@@ -163,8 +163,27 @@ export const UserManagement: React.FC<UserManagementProps> = ({ users, onAddUser
       setParsedUsers(newUsers);
   };
 
+  const getRoleColor = (role: string) => {
+      switch(role) {
+          case 'admin': return 'bg-purple-100 text-purple-700 border-purple-200';
+          case 'student': return 'bg-green-100 text-green-700 border-green-200';
+          case 'professor': return 'bg-orange-100 text-orange-700 border-orange-200';
+          default: return 'bg-blue-100 text-blue-700 border-blue-200';
+      }
+  };
+
+  const getRoleLabel = (role: string) => {
+      switch(role) {
+          case 'admin': return 'مسؤول مكتبة';
+          case 'student': return 'طالب';
+          case 'professor': return 'أستاذ/دكتور';
+          case 'staff': return 'موظف';
+          default: return role;
+      }
+  };
+
   return (
-    <div className="space-y-6 animate-fade-in font-sans">
+    <div className="space-y-6 animate-fade-in font-sans pb-12">
       
       {/* Header */}
       <header className="bg-gradient-to-br from-[#4A90E2] to-[#2C6FB7] text-white p-8 rounded-2xl shadow-lg shadow-blue-500/20 text-center mb-8">
@@ -177,7 +196,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ users, onAddUser
 
       {/* Quick Stats */}
       <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
-        <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border-t-4 border-[#4A90E2] flex items-center gap-3 md:gap-4">
+        <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border-t-4 border-[#4A90E2] flex items-center gap-3 md:gap-4 hover:shadow-md transition">
             <div className="bg-gradient-to-br from-[#4A90E2] to-[#2C6FB7] w-10 h-10 md:w-14 md:h-14 rounded-xl flex items-center justify-center text-white text-lg md:text-2xl shadow-lg shadow-blue-200">
                 <Users className="w-6 h-6 md:w-8 md:h-8" />
             </div>
@@ -187,7 +206,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ users, onAddUser
             </div>
         </div>
 
-        <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border-t-4 border-[#4CAF50] flex items-center gap-3 md:gap-4">
+        <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border-t-4 border-[#4CAF50] flex items-center gap-3 md:gap-4 hover:shadow-md transition">
             <div className="bg-gradient-to-br from-[#4CAF50] to-[#2E7D32] w-10 h-10 md:w-14 md:h-14 rounded-xl flex items-center justify-center text-white text-lg md:text-2xl shadow-lg shadow-green-200">
                 <GraduationCap className="w-6 h-6 md:w-8 md:h-8" />
             </div>
@@ -197,7 +216,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ users, onAddUser
             </div>
         </div>
 
-        <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border-t-4 border-[#FFA726] flex items-center gap-3 md:gap-4">
+        <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border-t-4 border-[#FFA726] flex items-center gap-3 md:gap-4 hover:shadow-md transition">
             <div className="bg-gradient-to-br from-[#FFA726] to-[#F57C00] w-10 h-10 md:w-14 md:h-14 rounded-xl flex items-center justify-center text-white text-lg md:text-2xl shadow-lg shadow-orange-200">
                 <Briefcase className="w-6 h-6 md:w-8 md:h-8" />
             </div>
@@ -207,7 +226,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ users, onAddUser
             </div>
         </div>
 
-        <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border-t-4 border-[#F44336] flex items-center gap-3 md:gap-4">
+        <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border-t-4 border-[#F44336] flex items-center gap-3 md:gap-4 hover:shadow-md transition">
             <div className="bg-gradient-to-br from-[#F44336] to-[#C62828] w-10 h-10 md:w-14 md:h-14 rounded-xl flex items-center justify-center text-white text-lg md:text-2xl shadow-lg shadow-red-200">
                 <PauseCircle className="w-6 h-6 md:w-8 md:h-8" />
             </div>
@@ -281,171 +300,99 @@ export const UserManagement: React.FC<UserManagementProps> = ({ users, onAddUser
          </div>
       </div>
 
-      {/* Users Table (Desktop) */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hidden md:block">
-         <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4 bg-slate-50/50">
-            <h2 className="text-xl font-bold text-[#2C6FB7] flex items-center gap-2">
-                <Users className="w-6 h-6" /> قائمة المستخدمين المسجلين
-            </h2>
-            <div className="flex gap-2 overflow-x-auto w-full md:w-auto no-scrollbar pb-2 md:pb-0">
-                {(['all', 'active', 'inactive', 'suspended'] as const).map(st => (
-                    <button 
-                        key={st}
-                        onClick={() => setStatusFilter(st)}
-                        className={`px-4 py-2 rounded-full border text-sm font-medium transition whitespace-nowrap ${statusFilter === st ? 'bg-[#4A90E2] text-white border-[#4A90E2]' : 'bg-white text-slate-500 hover:border-[#4A90E2]'}`}
-                    >
-                        {st === 'all' && 'الكل'}
-                        {st === 'active' && 'نشط'}
-                        {st === 'inactive' && 'غير نشط'}
-                        {st === 'suspended' && 'موقوف'}
-                    </button>
-                ))}
-            </div>
-         </div>
+      {/* Users Grid Cards (Unified View) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+         {filteredUsers.map(user => (
+             <div key={user.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 hover:shadow-lg transition-shadow duration-300 overflow-hidden flex flex-col group relative">
+                 
+                 {/* Top Badges */}
+                 <div className="absolute top-3 left-3 z-10">
+                     <span className={`px-2 py-1 rounded-md text-[10px] font-bold border ${getRoleColor(user.role)}`}>
+                         {getRoleLabel(user.role)}
+                     </span>
+                 </div>
+                 <div className="absolute top-3 right-3 z-10">
+                     {user.status === 'active' && <span className="px-2 py-1 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">نشط</span>}
+                     {user.status === 'inactive' && <span className="px-2 py-1 rounded-md text-[10px] font-bold bg-slate-100 text-slate-500 border border-slate-200">غير نشط</span>}
+                     {user.status === 'suspended' && <span className="px-2 py-1 rounded-md text-[10px] font-bold bg-rose-100 text-rose-700 border border-rose-200">موقوف</span>}
+                 </div>
 
-         <div className="overflow-x-auto">
-            <table className="w-full text-right text-sm border-separate border-spacing-0">
-                <thead>
-                    <tr>
-                        <th className="bg-gradient-to-r from-[#4A90E2] to-[#2C6FB7] text-white p-4 font-semibold border-b-2 border-[#2C6FB7] sticky top-0 first:rounded-tr-lg">الرقم الجامعي</th>
-                        <th className="bg-gradient-to-r from-[#4A90E2] to-[#2C6FB7] text-white p-4 font-semibold border-b-2 border-[#2C6FB7] sticky top-0">الاسم الكامل</th>
-                        <th className="bg-gradient-to-r from-[#4A90E2] to-[#2C6FB7] text-white p-4 font-semibold border-b-2 border-[#2C6FB7] sticky top-0">البريد الإلكتروني</th>
-                        <th className="bg-gradient-to-r from-[#4A90E2] to-[#2C6FB7] text-white p-4 font-semibold border-b-2 border-[#2C6FB7] sticky top-0">نوع المستخدم</th>
-                        <th className="bg-gradient-to-r from-[#4A90E2] to-[#2C6FB7] text-white p-4 font-semibold border-b-2 border-[#2C6FB7] sticky top-0">القسم/التخصص</th>
-                        <th className="bg-gradient-to-r from-[#4A90E2] to-[#2C6FB7] text-white p-4 font-semibold border-b-2 border-[#2C6FB7] sticky top-0">الحالة</th>
-                        <th className="bg-gradient-to-r from-[#4A90E2] to-[#2C6FB7] text-white p-4 font-semibold border-b-2 border-[#2C6FB7] sticky top-0">الزيارات</th>
-                        <th className="bg-gradient-to-r from-[#4A90E2] to-[#2C6FB7] text-white p-4 font-semibold border-b-2 border-[#2C6FB7] sticky top-0">آخر دخول</th>
-                        <th className="bg-gradient-to-r from-[#4A90E2] to-[#2C6FB7] text-white p-4 font-semibold border-b-2 border-[#2C6FB7] sticky top-0 last:rounded-tl-lg text-center">إجراءات</th>
-                    </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                    {filteredUsers.map(user => (
-                        <tr key={user.id} className="hover:bg-blue-50/30 transition duration-150">
-                            <td className="p-4">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#4A90E2] to-[#2C6FB7] flex items-center justify-center text-white font-bold text-lg shrink-0">
-                                        {user.name.charAt(0)}
-                                    </div>
-                                    <span className="font-mono text-slate-600">{user.id}</span>
-                                </div>
-                            </td>
-                            <td className="p-4 font-bold text-slate-800">{user.name}</td>
-                            <td className="p-4 text-slate-600">{user.email}</td>
-                            <td className="p-4">
-                                {user.role === 'admin' && <span className="px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-700 border border-purple-200">مسؤول مكتبة</span>}
-                                {user.role === 'student' && <span className="px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 border border-green-200">طالب</span>}
-                                {user.role === 'professor' && <span className="px-3 py-1 rounded-full text-xs font-bold bg-orange-100 text-orange-700 border border-orange-200">أستاذ/دكتور</span>}
-                                {user.role === 'staff' && <span className="px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-700 border border-blue-200">موظف</span>}
-                            </td>
-                            <td className="p-4 text-slate-600">{user.department || '-'}</td>
-                            <td className="p-4">
-                                {user.status === 'active' && <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">نشط</span>}
-                                {user.status === 'inactive' && <span className="px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-500">غير نشط</span>}
-                                {user.status === 'suspended' && <span className="px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-700">موقوف</span>}
-                            </td>
-                            <td className="p-4 font-bold text-center">{user.visits || 0}</td>
-                            <td className="p-4 text-sm text-slate-500">
-                                {user.lastLogin ? new Date(user.lastLogin).toLocaleDateString('ar-EG-u-nu-latn') : 'لم يدخل بعد'}
-                            </td>
-                            <td className="p-4">
-                                <div className="flex justify-center gap-2">
-                                    <button onClick={() => handleOpenEdit(user)} className="px-3 py-1.5 rounded bg-[#4A90E2] text-white hover:bg-[#2C6FB7] text-xs font-bold flex items-center gap-1 transition">
-                                        <Edit2 className="w-3 h-3" /> تعديل
-                                    </button>
-                                    <button 
-                                        onClick={() => { setResetTargetUser(user); setGeneratedPassword((parseInt(user.id)*2).toString() || '123456'); setShowResetModal(true); }} 
-                                        className="px-3 py-1.5 rounded bg-[#FFA726] text-white hover:bg-[#F57C00] text-xs font-bold flex items-center gap-1 transition"
-                                    >
-                                        <Key className="w-3 h-3" /> إعادة تعيين
-                                    </button>
-                                    <button 
-                                        onClick={() => { if(window.confirm('هل أنت متأكد من حذف هذا المستخدم؟')) onDeleteUser(user.id); }}
-                                        className="px-3 py-1.5 rounded bg-rose-500 text-white hover:bg-rose-700 text-xs font-bold flex items-center gap-1 transition"
-                                    >
-                                        <Trash2 className="w-3 h-3" /> حذف
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-         </div>
+                 {/* Card Content */}
+                 <div className="p-6 pt-12 flex flex-col h-full items-center text-center">
+                     <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#4A90E2] to-[#2C6FB7] flex items-center justify-center text-white font-bold text-3xl shadow-lg shadow-blue-200 mb-4 group-hover:scale-110 transition-transform duration-300">
+                         {user.name.charAt(0)}
+                     </div>
+                     
+                     <h3 className="font-bold text-slate-800 text-lg mb-1 truncate w-full" title={user.name}>{user.name}</h3>
+                     <p className="text-sm text-slate-500 font-mono bg-slate-50 px-3 py-1 rounded-lg border border-slate-100 mb-3">{user.id}</p>
+                     
+                     <div className="w-full space-y-2 mb-4 text-sm text-slate-600">
+                         <div className="flex items-center gap-2 justify-center">
+                             <Briefcase className="w-3 h-3 text-slate-400" />
+                             <span className="truncate">{user.department || 'عام'}</span>
+                         </div>
+                         <div className="flex items-center gap-2 justify-center" title={user.email}>
+                             <Mail className="w-3 h-3 text-slate-400" />
+                             <span className="truncate max-w-[200px]">{user.email}</span>
+                         </div>
+                     </div>
 
-         {/* Mobile Cards View */}
-         <div className="md:hidden p-4 space-y-4">
-            {filteredUsers.map(user => (
-                <div key={user.id} className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-                    <div className="flex justify-between items-start mb-3 border-b border-slate-50 pb-2">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#4A90E2] to-[#2C6FB7] flex items-center justify-center text-white font-bold text-lg shrink-0">
-                                {user.name.charAt(0)}
-                            </div>
-                            <div>
-                                <h4 className="font-bold text-slate-800">{user.name}</h4>
-                                <span className="text-xs text-slate-400 font-mono">{user.id}</span>
-                            </div>
-                        </div>
-                        {user.status === 'active' && <span className="text-[10px] px-2 py-1 rounded-full font-bold bg-emerald-100 text-emerald-700">نشط</span>}
-                        {user.status === 'inactive' && <span className="text-[10px] px-2 py-1 rounded-full font-bold bg-slate-100 text-slate-500">غير نشط</span>}
-                        {user.status === 'suspended' && <span className="text-[10px] px-2 py-1 rounded-full font-bold bg-rose-100 text-rose-700">موقوف</span>}
-                    </div>
+                     <div className="grid grid-cols-2 gap-2 w-full mt-auto mb-4 text-xs">
+                         <div className="bg-slate-50 p-2 rounded border border-slate-100">
+                             <span className="block text-slate-400 mb-1">الزيارات</span>
+                             <span className="font-bold text-slate-700">{user.visits || 0}</span>
+                         </div>
+                         <div className="bg-slate-50 p-2 rounded border border-slate-100">
+                             <span className="block text-slate-400 mb-1">آخر دخول</span>
+                             <span className="font-bold text-slate-700">{user.lastLogin ? new Date(user.lastLogin).toLocaleDateString('ar-EG-u-nu-latn') : '-'}</span>
+                         </div>
+                     </div>
 
-                    <div className="grid grid-cols-2 gap-2 text-xs text-slate-600 mb-4">
-                        <div className="bg-slate-50 p-2 rounded">
-                            <span className="block text-slate-400 mb-0.5">النوع</span>
-                            <span className="font-bold">{user.role === 'student' ? 'طالب' : user.role === 'admin' ? 'مسؤول' : user.role === 'professor' ? 'أستاذ' : 'موظف'}</span>
-                        </div>
-                        <div className="bg-slate-50 p-2 rounded">
-                            <span className="block text-slate-400 mb-0.5">القسم</span>
-                            <span className="font-bold truncate">{user.department || '-'}</span>
-                        </div>
-                        <div className="bg-slate-50 p-2 rounded col-span-2">
-                            <span className="block text-slate-400 mb-0.5">البريد الإلكتروني</span>
-                            <span className="font-mono">{user.email}</span>
-                        </div>
-                    </div>
-
-                    <div className="flex gap-2">
-                        <button 
-                            onClick={() => handleOpenEdit(user)}
-                            className="flex-1 py-2 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold flex items-center justify-center gap-1 hover:bg-blue-100"
-                        >
-                            <Edit2 className="w-3 h-3" /> تعديل
-                        </button>
-                        <button 
-                            onClick={() => { setResetTargetUser(user); setGeneratedPassword((parseInt(user.id)*2).toString() || '123456'); setShowResetModal(true); }}
-                            className="flex-1 py-2 bg-orange-50 text-orange-600 rounded-lg text-xs font-bold flex items-center justify-center gap-1 hover:bg-orange-100"
-                        >
-                            <Key className="w-3 h-3" /> كلمة المرور
-                        </button>
-                        <button 
-                            onClick={() => { if(window.confirm('هل أنت متأكد من حذف هذا المستخدم؟')) onDeleteUser(user.id); }}
-                            className="w-10 flex items-center justify-center bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100"
-                        >
-                            <Trash2 className="w-4 h-4" />
-                        </button>
-                    </div>
-                </div>
-            ))}
-            {filteredUsers.length === 0 && (
-                <div className="p-8 text-center text-slate-500 bg-white rounded-xl border border-slate-200">
-                    <p>لا يوجد مستخدمين</p>
-                </div>
-            )}
-         </div>
-
-         {/* Mock Pagination */}
-         <div className="p-6 border-t border-slate-100 flex justify-center gap-2">
-            <button className="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 transition">السابق</button>
-            <button className="px-4 py-2 bg-[#4A90E2] text-white rounded-lg font-bold">1</button>
-            <button className="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 transition">2</button>
-            <button className="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 transition">3</button>
-            <button className="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 transition">التالي</button>
-         </div>
+                     {/* Action Footer */}
+                     <div className="pt-4 border-t border-slate-100 w-full flex justify-center gap-2">
+                         <button 
+                             onClick={() => handleOpenEdit(user)}
+                             className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition"
+                             title="تعديل"
+                         >
+                             <Edit2 className="w-4 h-4" />
+                         </button>
+                         <button 
+                             onClick={() => { setResetTargetUser(user); setGeneratedPassword((parseInt(user.id)*2).toString() || '123456'); setShowResetModal(true); }}
+                             className="p-2 bg-orange-50 text-orange-600 rounded-lg hover:bg-orange-100 transition"
+                             title="إعادة تعيين كلمة المرور"
+                         >
+                             <Key className="w-4 h-4" />
+                         </button>
+                         <button 
+                             onClick={() => { if(window.confirm('هل أنت متأكد من حذف هذا المستخدم؟')) onDeleteUser(user.id); }}
+                             className="p-2 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 transition"
+                             title="حذف"
+                         >
+                             <Trash2 className="w-4 h-4" />
+                         </button>
+                     </div>
+                 </div>
+             </div>
+         ))}
       </div>
 
-      {/* --- Modals --- */}
+      {filteredUsers.length === 0 && (
+          <div className="p-12 text-center text-slate-500 bg-white rounded-2xl border border-slate-200 shadow-sm">
+              <p>لا يوجد مستخدمين مطابقين للبحث</p>
+          </div>
+      )}
+
+      {/* Mock Pagination */}
+      <div className="p-6 flex justify-center gap-2 mt-4">
+         <button className="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition font-bold">السابق</button>
+         <button className="px-4 py-2 bg-[#4A90E2] text-white rounded-lg font-bold shadow-lg shadow-blue-200">1</button>
+         <button className="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition font-bold">2</button>
+         <button className="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition font-bold">3</button>
+         <button className="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition font-bold">التالي</button>
+      </div>
+
+      {/* --- Modals (Keep existing modals unchanged visually but ensures logic is intact) --- */}
 
       {/* Add/Edit User Modal */}
       {showAddModal && (

@@ -11,7 +11,7 @@ import { Specializations } from './components/Specializations';
 import { Settings } from './components/Settings';
 import { Page, Book, Loan, User, LibrarySettings } from './types';
 import { supabase } from './services/supabaseClient';
-import { Loader2, Menu, Library } from 'lucide-react';
+import { Loader2, Menu, Library, AlertCircle } from 'lucide-react';
 
 const INITIAL_SETTINGS: LibrarySettings = {
   name: 'مكتبة كلية المنار الجامعية المركزية',
@@ -72,6 +72,11 @@ const App: React.FC = () => {
   const [notifications, setNotifications] = useState<string[]>([]);
   const [specializations, setSpecializations] = useState<string[]>([]);
 
+  // Helper to determine start page based on role
+  const getDefaultPageForUser = (role: string) => {
+      return role === 'admin' ? Page.DASHBOARD : Page.CATALOG;
+  };
+
   // 1. Initial Load: Fetch Settings
   const fetchPublicSettings = async () => {
       try {
@@ -85,7 +90,7 @@ const App: React.FC = () => {
               if (newSetting) setSettingsId(newSetting.id);
           }
       } catch (error) {
-          console.error("Error fetching settings:", error);
+          console.warn("Settings fetch warning:", error);
       }
   };
 
@@ -105,13 +110,13 @@ const App: React.FC = () => {
           if (loansResult.data) setLoans(loansResult.data as Loan[]);
           if (specsResult.data) setSpecializations(specsResult.data.map((s: any) => s.name));
 
-          // Fallback: If no users exist, ensure admin exists locally for this session
-          if (!usersResult.data || usersResult.data.length === 0) {
+          // Fallback: If no users exist in DB (rare), ensure admin exists locally for this session so app doesn't break
+          if ((!usersResult.data || usersResult.data.length === 0) && (!usersResult.error)) {
+               // Only assume default admin if strictly 0 users found and no error
               const defaultAdmin: User = {
                   id: 'admin', name: 'Admin', email: 'admin@system.com', password: 'admin',
                   role: 'admin', status: 'active', joinDate: new Date().toISOString(), visits: 0, department: 'IT'
               };
-               // Don't insert automatically to avoid race conditions, just set state
                setUsers([defaultAdmin]);
           }
 
@@ -124,44 +129,54 @@ const App: React.FC = () => {
       const initApp = async () => {
           setIsLoading(true);
 
-          try {
-              // Run settings fetch and session check in parallel for speed
-              const settingsPromise = fetchPublicSettings();
-              const storedUserId = localStorage.getItem('library_user_id');
-              
-              let userFound = false;
+          // 1. Fetch settings first (doesn't require auth usually, or public table)
+          await fetchPublicSettings();
 
-              if (storedUserId) {
+          // 2. Check Session
+          const storedUserId = localStorage.getItem('library_user_id');
+          
+          if (storedUserId) {
+              try {
                   const { data: user, error } = await supabase
                       .from('users')
                       .select('*')
                       .eq('id', storedUserId)
                       .single();
 
-                  if (user && !error) {
+                  if (error) {
+                      // Only clear session if user is definitely not found (PGRST116)
+                      if (error.code === 'PGRST116') {
+                          console.warn("User not found in DB, clearing session.");
+                          localStorage.removeItem('library_user_id');
+                      } else {
+                          console.error("Network or DB error during session check", error);
+                          // Do NOT clear session on network error, but we can't log them in fully.
+                          // Ideally we might show a 'retry' screen, but for now we'll let it fail gracefully to login
+                          // or if we trust local storage, we could proceed (risky). 
+                          // Better to force re-login on critical error to be safe.
+                          localStorage.removeItem('library_user_id'); 
+                      }
+                  } else if (user) {
                       if (user.status === 'suspended') {
                           localStorage.removeItem('library_user_id');
                       } else {
-                          setCurrentUser(user as User);
-                          setCurrentPage(Page.DASHBOARD);
-                          userFound = true;
-                          // Trigger data fetch in background (don't await it to unblock UI)
+                          // Success! Restore session
+                          const typedUser = user as User;
+                          setCurrentUser(typedUser);
+                          // Redirect to appropriate page based on role
+                          setCurrentPage(getDefaultPageForUser(typedUser.role));
+                          
+                          // Load data in background
                           fetchProtectedData();
                       }
-                  } else {
-                      // Invalid session
-                      localStorage.removeItem('library_user_id');
                   }
+              } catch (err) {
+                  console.error("Init exception", err);
+                  localStorage.removeItem('library_user_id');
               }
-
-              await settingsPromise;
-
-          } catch (err) {
-              console.error("Initialization failed", err);
-              localStorage.removeItem('library_user_id');
-          } finally {
-              setIsLoading(false);
           }
+
+          setIsLoading(false);
       };
 
       initApp();
@@ -218,7 +233,8 @@ const App: React.FC = () => {
           // 4. Fetch Data NOW
           await fetchProtectedData();
           
-          setCurrentPage(Page.DASHBOARD);
+          // 5. Redirect based on role
+          setCurrentPage(getDefaultPageForUser(updatedUser.role));
       } catch (err) {
           console.error('Login error:', err);
           return 'حدث خطأ أثناء تسجيل الدخول';
@@ -441,11 +457,19 @@ const App: React.FC = () => {
   }
 
   const renderContent = () => {
+    // Basic authorization check
     if (currentUser.role === 'student' && [Page.DASHBOARD, Page.USERS, Page.SPECIALIZATIONS, Page.SETTINGS].includes(currentPage)) {
         return (
             <div className="flex flex-col items-center justify-center h-full text-slate-500">
+                <AlertCircle className="w-12 h-12 text-slate-300 mb-4" />
                 <h3 className="text-xl font-bold mb-2">غير مصرح بالدخول</h3>
-                <p>هذه الصفحة متاحة للمسؤولين فقط.</p>
+                <p>عفواً، ليس لديك صلاحية للوصول إلى هذه الصفحة.</p>
+                <button 
+                  onClick={() => setCurrentPage(Page.CATALOG)} 
+                  className="mt-4 px-6 py-2 bg-[#4A90E2] text-white rounded-lg hover:bg-[#2C6FB7] transition font-bold"
+                >
+                  الذهاب للمكتبة
+                </button>
             </div>
         );
     }

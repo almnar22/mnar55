@@ -11,7 +11,7 @@ import { Specializations } from './components/Specializations';
 import { Settings } from './components/Settings';
 import { Page, Book, Loan, User, LibrarySettings } from './types';
 import { supabase } from './services/supabaseClient';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Menu, Library } from 'lucide-react';
 
 const INITIAL_SETTINGS: LibrarySettings = {
   name: 'مكتبة كلية المنار الجامعية المركزية',
@@ -62,6 +62,7 @@ const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<Page>(Page.LOGIN);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoginLoading, setIsLoginLoading] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile Sidebar State
   
   const [books, setBooks] = useState<Book[]>([]);
   const [users, setUsers] = useState<User[]>([]);
@@ -511,15 +512,35 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-slate-50 text-slate-900 font-sans" dir="rtl">
+    <div className="flex h-screen overflow-hidden bg-slate-50 text-slate-900 font-sans" dir="rtl">
+      
+      {/* Mobile Sidebar Trigger (Header) */}
+      <div className="fixed top-0 left-0 right-0 h-16 bg-white shadow-sm z-30 flex items-center justify-between px-4 md:hidden border-b border-slate-200">
+         <div className="flex items-center gap-2">
+            <div className="bg-primary-500 p-1.5 rounded-lg shrink-0">
+                <Library className="w-5 h-5 text-white" />
+            </div>
+            <h1 className="font-bold text-slate-800 text-sm truncate max-w-[200px]">{settings.name}</h1>
+         </div>
+         <button onClick={() => setIsSidebarOpen(true)} className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg">
+            <Menu className="w-6 h-6" />
+         </button>
+      </div>
+
       <Sidebar 
         currentPage={currentPage} 
-        onNavigate={setCurrentPage} 
+        onNavigate={(page) => {
+            setCurrentPage(page);
+            setIsSidebarOpen(false); // Close sidebar on mobile when navigating
+        }} 
         currentUser={currentUser}
         onLogout={handleLogout}
         settings={settings}
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
       />
-      <main className="flex-1 p-6 md:p-8 overflow-y-auto h-screen">
+      
+      <main className="flex-1 overflow-y-auto h-full p-4 md:p-8 pt-20 md:pt-8 bg-slate-50">
         {renderContent()}
       </main>
     </div>

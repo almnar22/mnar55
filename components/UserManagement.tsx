@@ -176,51 +176,51 @@ export const UserManagement: React.FC<UserManagementProps> = ({ users, onAddUser
       </header>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-[#4A90E2] flex items-center gap-4">
-            <div className="bg-gradient-to-br from-[#4A90E2] to-[#2C6FB7] w-14 h-14 rounded-xl flex items-center justify-center text-white text-2xl shadow-lg shadow-blue-200">
-                <Users className="w-8 h-8" />
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
+        <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border-t-4 border-[#4A90E2] flex items-center gap-3 md:gap-4">
+            <div className="bg-gradient-to-br from-[#4A90E2] to-[#2C6FB7] w-10 h-10 md:w-14 md:h-14 rounded-xl flex items-center justify-center text-white text-lg md:text-2xl shadow-lg shadow-blue-200">
+                <Users className="w-6 h-6 md:w-8 md:h-8" />
             </div>
             <div>
-                <h3 className="text-3xl font-bold text-slate-800">{stats.total}</h3>
-                <p className="text-slate-500 text-sm">إجمالي المستخدمين</p>
+                <h3 className="text-xl md:text-3xl font-bold text-slate-800">{stats.total}</h3>
+                <p className="text-slate-500 text-xs md:text-sm">إجمالي المستخدمين</p>
             </div>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-[#4CAF50] flex items-center gap-4">
-            <div className="bg-gradient-to-br from-[#4CAF50] to-[#2E7D32] w-14 h-14 rounded-xl flex items-center justify-center text-white text-2xl shadow-lg shadow-green-200">
-                <GraduationCap className="w-8 h-8" />
+        <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border-t-4 border-[#4CAF50] flex items-center gap-3 md:gap-4">
+            <div className="bg-gradient-to-br from-[#4CAF50] to-[#2E7D32] w-10 h-10 md:w-14 md:h-14 rounded-xl flex items-center justify-center text-white text-lg md:text-2xl shadow-lg shadow-green-200">
+                <GraduationCap className="w-6 h-6 md:w-8 md:h-8" />
             </div>
             <div>
-                <h3 className="text-3xl font-bold text-slate-800">{stats.students}</h3>
-                <p className="text-slate-500 text-sm">الطلاب</p>
+                <h3 className="text-xl md:text-3xl font-bold text-slate-800">{stats.students}</h3>
+                <p className="text-slate-500 text-xs md:text-sm">الطلاب</p>
             </div>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-[#FFA726] flex items-center gap-4">
-            <div className="bg-gradient-to-br from-[#FFA726] to-[#F57C00] w-14 h-14 rounded-xl flex items-center justify-center text-white text-2xl shadow-lg shadow-orange-200">
-                <Briefcase className="w-8 h-8" />
+        <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border-t-4 border-[#FFA726] flex items-center gap-3 md:gap-4">
+            <div className="bg-gradient-to-br from-[#FFA726] to-[#F57C00] w-10 h-10 md:w-14 md:h-14 rounded-xl flex items-center justify-center text-white text-lg md:text-2xl shadow-lg shadow-orange-200">
+                <Briefcase className="w-6 h-6 md:w-8 md:h-8" />
             </div>
             <div>
-                <h3 className="text-3xl font-bold text-slate-800">{stats.staff}</h3>
-                <p className="text-slate-500 text-sm">الأساتذة والموظفين</p>
+                <h3 className="text-xl md:text-3xl font-bold text-slate-800">{stats.staff}</h3>
+                <p className="text-slate-500 text-xs md:text-sm">الأساتذة والموظفين</p>
             </div>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-[#F44336] flex items-center gap-4">
-            <div className="bg-gradient-to-br from-[#F44336] to-[#C62828] w-14 h-14 rounded-xl flex items-center justify-center text-white text-2xl shadow-lg shadow-red-200">
-                <PauseCircle className="w-8 h-8" />
+        <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border-t-4 border-[#F44336] flex items-center gap-3 md:gap-4">
+            <div className="bg-gradient-to-br from-[#F44336] to-[#C62828] w-10 h-10 md:w-14 md:h-14 rounded-xl flex items-center justify-center text-white text-lg md:text-2xl shadow-lg shadow-red-200">
+                <PauseCircle className="w-6 h-6 md:w-8 md:h-8" />
             </div>
             <div>
-                <h3 className="text-3xl font-bold text-slate-800">{stats.inactive}</h3>
-                <p className="text-slate-500 text-sm">غير نشطين</p>
+                <h3 className="text-xl md:text-3xl font-bold text-slate-800">{stats.inactive}</h3>
+                <p className="text-slate-500 text-xs md:text-sm">غير نشطين</p>
             </div>
         </div>
       </div>
 
       {/* Action Bar */}
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-100">
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-4 md:mb-6">
             <div className="relative">
                 <label className="block text-sm font-bold text-[#2C6FB7] mb-2">🔍 بحث عن مستخدم</label>
                 <input 
@@ -249,46 +249,50 @@ export const UserManagement: React.FC<UserManagementProps> = ({ users, onAddUser
             </div>
          </div>
 
-         <div className="flex flex-wrap gap-4">
-             <button 
-                onClick={handleOpenAdd}
-                className="bg-gradient-to-r from-[#4A90E2] to-[#2C6FB7] text-white px-6 py-3 rounded-lg font-bold shadow-lg shadow-blue-500/20 transition hover:-translate-y-1 flex items-center gap-2"
-             >
-                <Plus className="w-5 h-5" /> إضافة مستخدم جديد
-             </button>
-             <button 
-                onClick={() => { setShowBulkModal(true); setParsedUsers([]); setBulkData(''); }}
-                className="bg-gradient-to-r from-[#FFA726] to-[#F57C00] text-white px-6 py-3 rounded-lg font-bold shadow-lg shadow-orange-500/20 transition hover:-translate-y-1 flex items-center gap-2"
-             >
-                <FileSpreadsheet className="w-5 h-5" /> إضافة جماعية
-             </button>
-             <button 
-                onClick={handleExportUsers}
-                className="bg-white border-2 border-[#4CAF50] text-[#4CAF50] hover:bg-[#4CAF50] hover:text-white px-6 py-3 rounded-lg font-bold transition hover:-translate-y-1 flex items-center gap-2"
-             >
-                <Download className="w-5 h-5" /> تصدير البيانات
-             </button>
-             <button 
-                onClick={handleRefresh}
-                className="bg-white border-2 border-[#4A90E2] text-[#4A90E2] hover:bg-[#4A90E2] hover:text-white px-6 py-3 rounded-lg font-bold transition hover:-translate-y-1 flex items-center gap-2"
-             >
-                <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} /> تحديث القائمة
-             </button>
+         <div className="flex flex-col md:flex-row flex-wrap gap-2 md:gap-4">
+             <div className="flex gap-2 w-full md:w-auto">
+                <button 
+                    onClick={handleOpenAdd}
+                    className="flex-1 md:flex-none bg-gradient-to-r from-[#4A90E2] to-[#2C6FB7] text-white px-4 md:px-6 py-3 rounded-lg font-bold shadow-lg shadow-blue-500/20 transition hover:-translate-y-1 flex items-center justify-center gap-2 text-sm md:text-base"
+                >
+                    <Plus className="w-5 h-5" /> إضافة مستخدم
+                </button>
+                <button 
+                    onClick={() => { setShowBulkModal(true); setParsedUsers([]); setBulkData(''); }}
+                    className="flex-1 md:flex-none bg-gradient-to-r from-[#FFA726] to-[#F57C00] text-white px-4 md:px-6 py-3 rounded-lg font-bold shadow-lg shadow-orange-500/20 transition hover:-translate-y-1 flex items-center justify-center gap-2 text-sm md:text-base"
+                >
+                    <FileSpreadsheet className="w-5 h-5" /> إضافة جماعية
+                </button>
+             </div>
+             <div className="flex gap-2 w-full md:w-auto">
+                <button 
+                    onClick={handleExportUsers}
+                    className="flex-1 md:flex-none bg-white border-2 border-[#4CAF50] text-[#4CAF50] hover:bg-[#4CAF50] hover:text-white px-4 md:px-6 py-3 rounded-lg font-bold transition hover:-translate-y-1 flex items-center justify-center gap-2 text-sm md:text-base"
+                >
+                    <Download className="w-5 h-5" /> تصدير
+                </button>
+                <button 
+                    onClick={handleRefresh}
+                    className="flex-1 md:flex-none bg-white border-2 border-[#4A90E2] text-[#4A90E2] hover:bg-[#4A90E2] hover:text-white px-4 md:px-6 py-3 rounded-lg font-bold transition hover:-translate-y-1 flex items-center justify-center gap-2 text-sm md:text-base"
+                >
+                    <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} /> تحديث
+                </button>
+             </div>
          </div>
       </div>
 
-      {/* Users Table */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+      {/* Users Table (Desktop) */}
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hidden md:block">
          <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4 bg-slate-50/50">
             <h2 className="text-xl font-bold text-[#2C6FB7] flex items-center gap-2">
                 <Users className="w-6 h-6" /> قائمة المستخدمين المسجلين
             </h2>
-            <div className="flex gap-2">
+            <div className="flex gap-2 overflow-x-auto w-full md:w-auto no-scrollbar pb-2 md:pb-0">
                 {(['all', 'active', 'inactive', 'suspended'] as const).map(st => (
                     <button 
                         key={st}
                         onClick={() => setStatusFilter(st)}
-                        className={`px-4 py-2 rounded-full border text-sm font-medium transition ${statusFilter === st ? 'bg-[#4A90E2] text-white border-[#4A90E2]' : 'bg-white text-slate-500 hover:border-[#4A90E2]'}`}
+                        className={`px-4 py-2 rounded-full border text-sm font-medium transition whitespace-nowrap ${statusFilter === st ? 'bg-[#4A90E2] text-white border-[#4A90E2]' : 'bg-white text-slate-500 hover:border-[#4A90E2]'}`}
                     >
                         {st === 'all' && 'الكل'}
                         {st === 'active' && 'نشط'}
@@ -367,6 +371,70 @@ export const UserManagement: React.FC<UserManagementProps> = ({ users, onAddUser
                 </tbody>
             </table>
          </div>
+
+         {/* Mobile Cards View */}
+         <div className="md:hidden p-4 space-y-4">
+            {filteredUsers.map(user => (
+                <div key={user.id} className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                    <div className="flex justify-between items-start mb-3 border-b border-slate-50 pb-2">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#4A90E2] to-[#2C6FB7] flex items-center justify-center text-white font-bold text-lg shrink-0">
+                                {user.name.charAt(0)}
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-slate-800">{user.name}</h4>
+                                <span className="text-xs text-slate-400 font-mono">{user.id}</span>
+                            </div>
+                        </div>
+                        {user.status === 'active' && <span className="text-[10px] px-2 py-1 rounded-full font-bold bg-emerald-100 text-emerald-700">نشط</span>}
+                        {user.status === 'inactive' && <span className="text-[10px] px-2 py-1 rounded-full font-bold bg-slate-100 text-slate-500">غير نشط</span>}
+                        {user.status === 'suspended' && <span className="text-[10px] px-2 py-1 rounded-full font-bold bg-rose-100 text-rose-700">موقوف</span>}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-xs text-slate-600 mb-4">
+                        <div className="bg-slate-50 p-2 rounded">
+                            <span className="block text-slate-400 mb-0.5">النوع</span>
+                            <span className="font-bold">{user.role === 'student' ? 'طالب' : user.role === 'admin' ? 'مسؤول' : user.role === 'professor' ? 'أستاذ' : 'موظف'}</span>
+                        </div>
+                        <div className="bg-slate-50 p-2 rounded">
+                            <span className="block text-slate-400 mb-0.5">القسم</span>
+                            <span className="font-bold truncate">{user.department || '-'}</span>
+                        </div>
+                        <div className="bg-slate-50 p-2 rounded col-span-2">
+                            <span className="block text-slate-400 mb-0.5">البريد الإلكتروني</span>
+                            <span className="font-mono">{user.email}</span>
+                        </div>
+                    </div>
+
+                    <div className="flex gap-2">
+                        <button 
+                            onClick={() => handleOpenEdit(user)}
+                            className="flex-1 py-2 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold flex items-center justify-center gap-1 hover:bg-blue-100"
+                        >
+                            <Edit2 className="w-3 h-3" /> تعديل
+                        </button>
+                        <button 
+                            onClick={() => { setResetTargetUser(user); setGeneratedPassword((parseInt(user.id)*2).toString() || '123456'); setShowResetModal(true); }}
+                            className="flex-1 py-2 bg-orange-50 text-orange-600 rounded-lg text-xs font-bold flex items-center justify-center gap-1 hover:bg-orange-100"
+                        >
+                            <Key className="w-3 h-3" /> كلمة المرور
+                        </button>
+                        <button 
+                            onClick={() => { if(window.confirm('هل أنت متأكد من حذف هذا المستخدم؟')) onDeleteUser(user.id); }}
+                            className="w-10 flex items-center justify-center bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100"
+                        >
+                            <Trash2 className="w-4 h-4" />
+                        </button>
+                    </div>
+                </div>
+            ))}
+            {filteredUsers.length === 0 && (
+                <div className="p-8 text-center text-slate-500 bg-white rounded-xl border border-slate-200">
+                    <p>لا يوجد مستخدمين</p>
+                </div>
+            )}
+         </div>
+
          {/* Mock Pagination */}
          <div className="p-6 border-t border-slate-100 flex justify-center gap-2">
             <button className="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 transition">السابق</button>

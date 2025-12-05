@@ -5,7 +5,8 @@ import {
   Search, Filter, Plus, Printer, Edit2, Trash2, X, 
   FileSpreadsheet, Check, Info, Image as ImageIcon, 
   BookOpen, AlertTriangle, CheckCircle, RotateCcw,
-  UploadCloud, Download, LayoutGrid, Library
+  UploadCloud, Download, LayoutGrid, Library, Eye,
+  MapPin, Calendar, DollarSign, Hash, Layers
 } from 'lucide-react';
 
 interface CatalogProps {
@@ -24,6 +25,7 @@ export const Catalog: React.FC<CatalogProps> = ({ books, onAddBook, onAddBooks, 
   const [showBulkModal, setShowBulkModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [bookToDelete, setBookToDelete] = useState<string | null>(null);
+  const [viewBook, setViewBook] = useState<Book | null>(null); // State for viewing details
   
   // Search & Filter State
   const [searchFilter, setSearchFilter] = useState({
@@ -247,84 +249,84 @@ export const Catalog: React.FC<CatalogProps> = ({ books, onAddBook, onAddBooks, 
         </div>
 
         {/* Quick Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-md transition cursor-pointer group">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#4A90E2] to-[#2C6FB7] flex items-center justify-center text-white text-2xl shadow-lg shadow-blue-200 group-hover:scale-110 transition">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+            <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-slate-100 flex items-center gap-3 md:gap-4 hover:shadow-md transition cursor-pointer group">
+                <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl bg-gradient-to-br from-[#4A90E2] to-[#2C6FB7] flex items-center justify-center text-white text-lg md:text-2xl shadow-lg shadow-blue-200 group-hover:scale-110 transition">
                     <BookOpen />
                 </div>
                 <div>
-                    <h3 className="text-3xl font-bold text-slate-800">{stats.titles}</h3>
-                    <p className="text-slate-500 text-sm">إجمالي العناوين</p>
+                    <h3 className="text-xl md:text-3xl font-bold text-slate-800">{stats.titles}</h3>
+                    <p className="text-slate-500 text-xs md:text-sm">إجمالي العناوين</p>
                 </div>
             </div>
             
-            <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-md transition cursor-pointer group">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#4CAF50] to-[#2E7D32] flex items-center justify-center text-white text-2xl shadow-lg shadow-green-200 group-hover:scale-110 transition">
+            <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-slate-100 flex items-center gap-3 md:gap-4 hover:shadow-md transition cursor-pointer group">
+                <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl bg-gradient-to-br from-[#4CAF50] to-[#2E7D32] flex items-center justify-center text-white text-lg md:text-2xl shadow-lg shadow-green-200 group-hover:scale-110 transition">
                     <CheckCircle />
                 </div>
                 <div>
-                    <h3 className="text-3xl font-bold text-slate-800">{stats.available}</h3>
-                    <p className="text-slate-500 text-sm">نسخة متاحة</p>
+                    <h3 className="text-xl md:text-3xl font-bold text-slate-800">{stats.available}</h3>
+                    <p className="text-slate-500 text-xs md:text-sm">نسخة متاحة</p>
                 </div>
             </div>
 
-            <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-md transition cursor-pointer group">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#FFA726] to-[#EF6C00] flex items-center justify-center text-white text-2xl shadow-lg shadow-orange-200 group-hover:scale-110 transition">
+            <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-slate-100 flex items-center gap-3 md:gap-4 hover:shadow-md transition cursor-pointer group">
+                <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl bg-gradient-to-br from-[#FFA726] to-[#EF6C00] flex items-center justify-center text-white text-lg md:text-2xl shadow-lg shadow-orange-200 group-hover:scale-110 transition">
                     <Library />
                 </div>
                 <div>
-                    <h3 className="text-3xl font-bold text-slate-800">{stats.borrowed}</h3>
-                    <p className="text-slate-500 text-sm">نسخة مستعارة</p>
+                    <h3 className="text-xl md:text-3xl font-bold text-slate-800">{stats.borrowed}</h3>
+                    <p className="text-slate-500 text-xs md:text-sm">نسخة مستعارة</p>
                 </div>
             </div>
 
-            <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-md transition cursor-pointer group">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-[#F44336] to-[#C62828] flex items-center justify-center text-white text-2xl shadow-lg shadow-red-200 group-hover:scale-110 transition">
+            <div className="bg-white p-4 md:p-5 rounded-xl shadow-sm border border-slate-100 flex items-center gap-3 md:gap-4 hover:shadow-md transition cursor-pointer group">
+                <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl bg-gradient-to-br from-[#F44336] to-[#C62828] flex items-center justify-center text-white text-lg md:text-2xl shadow-lg shadow-red-200 group-hover:scale-110 transition">
                     <AlertTriangle />
                 </div>
                 <div>
-                    <h3 className="text-3xl font-bold text-slate-800">{stats.missing}</h3>
-                    <p className="text-slate-500 text-sm">نسخ ناقصة</p>
+                    <h3 className="text-xl md:text-3xl font-bold text-slate-800">{stats.missing}</h3>
+                    <p className="text-slate-500 text-xs md:text-sm">نسخ ناقصة</p>
                 </div>
             </div>
         </div>
 
         {/* Action Bar */}
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-col md:flex-row flex-wrap gap-3">
              {isAdmin && (
-                <>
+                <div className="flex gap-2 w-full md:w-auto">
                     <button 
                         onClick={handleOpenAdd}
-                        className="flex items-center gap-2 bg-[#4CAF50] hover:bg-[#388E3C] text-white px-6 py-3 rounded-lg font-bold shadow-lg shadow-green-500/20 transition hover:-translate-y-1"
+                        className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-[#4CAF50] hover:bg-[#388E3C] text-white px-4 md:px-6 py-3 rounded-lg font-bold shadow-lg shadow-green-500/20 transition hover:-translate-y-1 text-sm md:text-base"
                     >
-                        <Plus className="w-5 h-5" /> إضافة كتاب جديد
+                        <Plus className="w-5 h-5" /> إضافة كتاب
                     </button>
                     <button 
                         onClick={() => { setBulkStep(1); setParsedBooks([]); setBulkData(''); setShowBulkModal(true); }}
-                        className="flex items-center gap-2 bg-[#FFA726] hover:bg-[#F57C00] text-white px-6 py-3 rounded-lg font-bold shadow-lg shadow-orange-500/20 transition hover:-translate-y-1"
+                        className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-[#FFA726] hover:bg-[#F57C00] text-white px-4 md:px-6 py-3 rounded-lg font-bold shadow-lg shadow-orange-500/20 transition hover:-translate-y-1 text-sm md:text-base"
                     >
                         <FileSpreadsheet className="w-5 h-5" /> إضافة جماعية
                     </button>
-                </>
+                </div>
              )}
-             <div className="mr-auto flex gap-2">
+             <div className="mr-auto flex gap-2 w-full md:w-auto">
                 <button 
                     onClick={handleExport} 
-                    className="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 px-4 py-3 rounded-lg font-medium hover:bg-slate-50 transition"
+                    className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 px-4 py-3 rounded-lg font-medium hover:bg-slate-50 transition text-sm"
                 >
-                    <Download className="w-5 h-5" /> تصدير CSV
+                    <Download className="w-4 h-4" /> تصدير
                 </button>
                 <button 
                     onClick={() => window.print()} 
-                    className="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 px-4 py-3 rounded-lg font-medium hover:bg-slate-50 transition"
+                    className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 px-4 py-3 rounded-lg font-medium hover:bg-slate-50 transition text-sm"
                 >
-                    <Printer className="w-5 h-5" /> طباعة
+                    <Printer className="w-4 h-4" /> طباعة
                 </button>
              </div>
         </div>
 
         {/* Advanced Search Bar */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4">
+        <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4">
             <div className="flex flex-col md:flex-row gap-4">
                 <div className="flex-1 relative">
                     <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
@@ -336,12 +338,12 @@ export const Catalog: React.FC<CatalogProps> = ({ books, onAddBook, onAddBooks, 
                         className="w-full pl-4 pr-12 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#4A90E2] transition"
                     />
                 </div>
-                <div className="flex items-center gap-2 bg-slate-50 p-1 rounded-xl border border-slate-200">
+                <div className="flex items-center gap-2 bg-slate-50 p-1 rounded-xl border border-slate-200 overflow-x-auto no-scrollbar">
                     {['all', 'title', 'author', 'code'].map((type) => (
                         <button
                             key={type}
                             onClick={() => setSearchFilter({...searchFilter, type})}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap ${
                                 searchFilter.type === type 
                                 ? 'bg-[#4A90E2] text-white shadow-sm' 
                                 : 'text-slate-500 hover:text-slate-800 hover:bg-white'
@@ -356,7 +358,7 @@ export const Catalog: React.FC<CatalogProps> = ({ books, onAddBook, onAddBooks, 
                 </div>
             </div>
             
-            <div className="flex flex-wrap gap-4 pt-2 border-t border-slate-100">
+            <div className="flex flex-col md:flex-row flex-wrap gap-4 pt-2 border-t border-slate-100">
                  <div className="flex items-center gap-2 min-w-[200px]">
                     <Filter className="w-4 h-4 text-slate-400" />
                     <select 
@@ -379,17 +381,6 @@ export const Catalog: React.FC<CatalogProps> = ({ books, onAddBook, onAddBooks, 
                         {departments.map(d => <option key={d} value={d}>{d}</option>)}
                     </select>
                  </div>
-                 <div className="flex items-center gap-2 min-w-[150px]">
-                    <Library className="w-4 h-4 text-slate-400" />
-                    <select 
-                         value={searchFilter.cabinet}
-                         onChange={(e) => setSearchFilter({...searchFilter, cabinet: e.target.value})}
-                        className="flex-1 p-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[#4A90E2]"
-                    >
-                        <option value="">كل الخزانات</option>
-                        {cabinets.map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
-                 </div>
                  <button 
                     onClick={() => setSearchFilter({term: '', type: 'all', specialization: '', department: '', cabinet: '', status: 'all'})}
                     className="mr-auto text-sm text-red-500 hover:text-red-700 flex items-center gap-1 font-medium px-3 py-2 rounded-lg hover:bg-red-50 transition"
@@ -400,8 +391,8 @@ export const Catalog: React.FC<CatalogProps> = ({ books, onAddBook, onAddBooks, 
         </div>
       </div>
 
-      {/* --- Books Table --- */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+      {/* --- Books Table (Desktop) --- */}
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hidden md:block">
         <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
              <h3 className="font-bold text-slate-800">قائمة الكتب ({filteredBooks.length})</h3>
         </div>
@@ -465,6 +456,13 @@ export const Catalog: React.FC<CatalogProps> = ({ books, onAddBook, onAddBooks, 
                             <td className="p-3 text-slate-600 font-mono border-b border-slate-100">{book.price > 0 ? book.price.toFixed(2) : '-'}</td>
                             <td className="p-3 border-b border-slate-100">
                                 <div className="flex gap-2 justify-end">
+                                    <button 
+                                        onClick={() => setViewBook(book)} 
+                                        className="p-1.5 text-slate-500 hover:bg-slate-100 rounded transition" 
+                                        title="عرض التفاصيل"
+                                    >
+                                        <Eye className="w-4 h-4" />
+                                    </button>
                                     {isAdmin ? (
                                         <>
                                             <button onClick={() => handleOpenEdit(book)} className="p-1.5 text-[#4A90E2] hover:bg-blue-50 rounded transition"><Edit2 className="w-4 h-4" /></button>
@@ -496,6 +494,236 @@ export const Catalog: React.FC<CatalogProps> = ({ books, onAddBook, onAddBooks, 
             </table>
         </div>
       </div>
+
+      {/* --- Mobile Cards View (Hidden on Desktop) --- */}
+      <div className="md:hidden space-y-4">
+        {filteredBooks.map(book => (
+            <div key={book.id} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col gap-3">
+               <div className="flex gap-4">
+                  <div className="w-20 h-28 bg-slate-100 rounded-lg shrink-0 overflow-hidden border border-slate-200">
+                     {book.coverImage ? (
+                        <img src={book.coverImage} className="w-full h-full object-cover" alt="" />
+                     ) : (
+                        <div className="w-full h-full flex items-center justify-center text-slate-300">
+                            <ImageIcon className="w-8 h-8" />
+                        </div>
+                     )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                     <div className="flex justify-between items-start">
+                        <h4 className="font-bold text-slate-800 line-clamp-2 text-sm">{book.title}</h4>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold whitespace-nowrap shrink-0 ${
+                            book.remainingCopies > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
+                        }`}>
+                            {book.remainingCopies} متاح
+                        </span>
+                     </div>
+                     <p className="text-xs text-slate-500 mt-1 truncate">{book.author}</p>
+                     <div className="mt-2 flex flex-wrap gap-1">
+                        <span className="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 font-mono">{book.code}</span>
+                        <span className="text-[10px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded border border-blue-100 truncate max-w-[100px]">{book.specialization}</span>
+                     </div>
+                     <div className="mt-1 flex items-center gap-2 text-[10px] text-slate-400">
+                         <span className="flex items-center gap-1"><MapPin className="w-3 h-3"/> {book.cabinet || '-'}</span>
+                     </div>
+                  </div>
+               </div>
+               
+               <div className="flex gap-2 pt-3 border-t border-slate-100 mt-auto">
+                   <button 
+                       onClick={() => setViewBook(book)}
+                       className="flex-1 py-1.5 bg-slate-50 text-slate-600 rounded text-xs font-bold hover:bg-slate-100 flex items-center justify-center gap-1"
+                   >
+                       <Eye className="w-3 h-3" /> التفاصيل
+                   </button>
+                   {isAdmin && (
+                       <>
+                           <button 
+                               onClick={() => handleOpenEdit(book)}
+                               className="flex-1 py-1.5 bg-blue-50 text-blue-600 rounded text-xs font-bold hover:bg-blue-100 flex items-center justify-center gap-1"
+                           >
+                               <Edit2 className="w-3 h-3" /> تعديل
+                           </button>
+                           <button 
+                               onClick={() => { setBookToDelete(book.id); setShowDeleteModal(true); }}
+                               className="flex-1 py-1.5 bg-rose-50 text-rose-600 rounded text-xs font-bold hover:bg-rose-100 flex items-center justify-center gap-1"
+                           >
+                               <Trash2 className="w-3 h-3" /> حذف
+                           </button>
+                       </>
+                   )}
+               </div>
+            </div>
+        ))}
+        {filteredBooks.length === 0 && (
+            <div className="p-8 text-center text-slate-500 bg-white rounded-xl border border-slate-200">
+                <Search className="w-8 h-8 text-slate-200 mx-auto mb-2" />
+                <p>لا توجد كتب مطابقة</p>
+            </div>
+        )}
+      </div>
+
+      {/* --- View Book Details Modal --- */}
+      {viewBook && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl w-full max-w-3xl overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200 flex flex-col max-h-[90vh]">
+                
+                {/* Modal Header */}
+                <div className="p-5 border-b border-slate-100 bg-[#4A90E2] text-white flex justify-between items-center">
+                    <h3 className="text-xl font-bold flex items-center gap-2">
+                        <BookOpen className="w-6 h-6" />
+                        تفاصيل الكتاب
+                    </h3>
+                    <button onClick={() => setViewBook(null)} className="text-white/80 hover:text-white bg-white/10 hover:bg-white/20 p-1.5 rounded-full transition">
+                        <X className="w-5 h-5" />
+                    </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-8 bg-slate-50/50">
+                    <div className="flex flex-col md:flex-row gap-8">
+                        
+                        {/* Right: Cover & Main Actions */}
+                        <div className="w-full md:w-1/3 flex flex-col gap-4">
+                            <div className="aspect-[2/3] bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex items-center justify-center relative group">
+                                {viewBook.coverImage ? (
+                                    <img src={viewBook.coverImage} className="w-full h-full object-cover" alt="Book Cover" />
+                                ) : (
+                                    <div className="flex flex-col items-center gap-2 text-slate-300">
+                                        <ImageIcon className="w-16 h-16" />
+                                        <span className="text-sm">لا توجد صورة</span>
+                                    </div>
+                                )}
+                                <div className="absolute top-2 right-2">
+                                     {viewBook.remainingCopies > 0 ? (
+                                         <span className="bg-emerald-500 text-white px-3 py-1 rounded-lg text-xs font-bold shadow-lg">متاح للاستعارة</span>
+                                     ) : (
+                                         <span className="bg-rose-500 text-white px-3 py-1 rounded-lg text-xs font-bold shadow-lg">غير متاح</span>
+                                     )}
+                                </div>
+                            </div>
+                            
+                            <div className="bg-white p-4 rounded-xl border border-slate-200 text-center">
+                                <span className="block text-slate-400 text-xs mb-1">السعر</span>
+                                <span className="block text-xl font-bold text-slate-800 flex items-center justify-center gap-1">
+                                    <DollarSign className="w-4 h-4 text-emerald-500" />
+                                    {viewBook.price > 0 ? viewBook.price.toFixed(2) : 'مجاني / غير محدد'}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Left: Details Grid */}
+                        <div className="w-full md:w-2/3 space-y-6">
+                            
+                            {/* Main Info */}
+                            <div>
+                                <h2 className="text-2xl font-bold text-slate-800 mb-1">{viewBook.title}</h2>
+                                <p className="text-slate-500 text-lg flex items-center gap-2">
+                                    بواسطة <span className="text-[#4A90E2] font-medium">{viewBook.author}</span>
+                                </p>
+                            </div>
+
+                            {/* Tags */}
+                            <div className="flex flex-wrap gap-2">
+                                <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-lg text-sm font-medium border border-blue-100 flex items-center gap-1">
+                                    <Hash className="w-3 h-3" /> {viewBook.code}
+                                </span>
+                                <span className="bg-purple-50 text-purple-700 px-3 py-1 rounded-lg text-sm font-medium border border-purple-100">
+                                    {viewBook.specialization}
+                                </span>
+                                {viewBook.department && (
+                                    <span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-lg text-sm font-medium border border-slate-200">
+                                        {viewBook.department}
+                                    </span>
+                                )}
+                            </div>
+
+                            <hr className="border-slate-200" />
+
+                            {/* Info Grid */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1">
+                                    <span className="text-xs text-slate-400">رقم الجرد</span>
+                                    <p className="font-bold text-slate-700">{viewBook.inventoryNumber || '-'}</p>
+                                </div>
+                                <div className="space-y-1">
+                                    <span className="text-xs text-slate-400">تاريخ الدخول</span>
+                                    <p className="font-bold text-slate-700 flex items-center gap-1">
+                                        <Calendar className="w-3 h-3 text-slate-400" />
+                                        {viewBook.entryDate}
+                                    </p>
+                                </div>
+                                <div className="space-y-1">
+                                    <span className="text-xs text-slate-400">سنة الطبعة</span>
+                                    <p className="font-bold text-slate-700">{viewBook.editionYear || '-'}</p>
+                                </div>
+                                <div className="space-y-1">
+                                    <span className="text-xs text-slate-400">عدد الأجزاء</span>
+                                    <p className="font-bold text-slate-700">{viewBook.parts}</p>
+                                </div>
+                            </div>
+
+                            {/* Location Box */}
+                            <div className="bg-[#F0F7FF] border border-[#4A90E2]/30 rounded-xl p-4">
+                                <h4 className="font-bold text-[#4A90E2] mb-3 flex items-center gap-2">
+                                    <MapPin className="w-4 h-4" /> موقع التخزين
+                                </h4>
+                                <div className="grid grid-cols-3 gap-2 text-center">
+                                    <div className="bg-white p-2 rounded-lg border border-blue-100 shadow-sm">
+                                        <span className="block text-[10px] text-slate-400">الخزانة</span>
+                                        <span className="block font-bold text-slate-800 text-lg">{viewBook.cabinet || '-'}</span>
+                                    </div>
+                                    <div className="bg-white p-2 rounded-lg border border-blue-100 shadow-sm">
+                                        <span className="block text-[10px] text-slate-400">الرف</span>
+                                        <span className="block font-bold text-slate-800 text-lg">{viewBook.bookShelfNumber || '-'}</span>
+                                    </div>
+                                    <div className="bg-white p-2 rounded-lg border border-blue-100 shadow-sm">
+                                        <span className="block text-[10px] text-slate-400">الترتيب</span>
+                                        <span className="block font-bold text-slate-800 text-lg">{viewBook.shelfOrder || '-'}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Copies Status */}
+                            <div className="bg-slate-100 rounded-xl p-4 flex justify-between items-center">
+                                <div>
+                                    <span className="text-xs text-slate-500 block">إجمالي النسخ</span>
+                                    <span className="font-bold text-xl text-slate-800">{viewBook.copies}</span>
+                                </div>
+                                <div className="h-8 w-px bg-slate-300"></div>
+                                <div>
+                                    <span className="text-xs text-slate-500 block">المتبقي</span>
+                                    <span className={`font-bold text-xl ${viewBook.remainingCopies > 0 ? 'text-emerald-600' : 'text-rose-600'}`}>{viewBook.remainingCopies}</span>
+                                </div>
+                                <div className="h-8 w-px bg-slate-300"></div>
+                                <div>
+                                    <span className="text-xs text-slate-500 block">مستعار</span>
+                                    <span className="font-bold text-xl text-orange-600">{viewBook.copies - viewBook.remainingCopies}</span>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div className="p-5 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+                    {isAdmin && (
+                        <button 
+                            onClick={() => { setViewBook(null); handleOpenEdit(viewBook); }}
+                            className="px-6 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg font-bold hover:bg-slate-100 transition flex items-center gap-2"
+                        >
+                            <Edit2 className="w-4 h-4" /> تعديل البيانات
+                        </button>
+                    )}
+                    <button 
+                        onClick={() => setViewBook(null)}
+                        className="px-6 py-2 bg-[#4A90E2] text-white rounded-lg font-bold hover:bg-[#2C6FB7] transition"
+                    >
+                        إغلاق
+                    </button>
+                </div>
+            </div>
+        </div>
+      )}
 
       {/* --- Add/Edit Modal (Wizard) --- */}
       {showModal && (

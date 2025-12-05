@@ -191,19 +191,19 @@ export const Specializations: React.FC<SpecializationsProps> = ({ specialization
 
       {/* Tree Visualization */}
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-          <div className="flex justify-between items-center mb-6 pb-4 border-b border-slate-100">
+          <div className="flex flex-col md:flex-row justify-between items-center mb-6 pb-4 border-b border-slate-100 gap-4 md:gap-0">
               <h2 className="text-xl font-bold text-[#2C6FB7] flex items-center gap-2">
                   <FolderTree className="w-6 h-6" /> الهيكل التنظيمي للأقسام والتخصصات
               </h2>
-              <div className="flex gap-2">
+              <div className="flex gap-2 w-full md:w-auto">
                   <button 
                     onClick={() => setShowAddDeptModal(true)}
-                    className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition font-bold text-sm flex items-center gap-2"
+                    className="flex-1 md:flex-none bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition font-bold text-sm flex items-center justify-center gap-2"
                   >
-                      <Plus className="w-4 h-4" /> إضافة قسم جديد
+                      <Plus className="w-4 h-4" /> إضافة قسم
                   </button>
-                  <button onClick={handleOpenAdd} className="bg-[#FFA726] text-white px-4 py-2 rounded-lg hover:bg-[#F57C00] transition font-bold text-sm flex items-center gap-2">
-                      <Plus className="w-4 h-4" /> إضافة تخصص جديد
+                  <button onClick={handleOpenAdd} className="flex-1 md:flex-none bg-[#FFA726] text-white px-4 py-2 rounded-lg hover:bg-[#F57C00] transition font-bold text-sm flex items-center justify-center gap-2">
+                      <Plus className="w-4 h-4" /> إضافة تخصص
                   </button>
               </div>
           </div>
@@ -246,28 +246,28 @@ export const Specializations: React.FC<SpecializationsProps> = ({ specialization
 
       {/* Detailed List */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-          <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="p-4 md:p-6 border-b border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4">
               <h2 className="text-xl font-bold text-[#2C6FB7] flex items-center gap-2">
                   <FileSpreadsheet className="w-6 h-6" /> قائمة التخصصات التفصيلية
               </h2>
-              <div className="flex gap-2">
+              <div className="flex gap-2 w-full md:w-auto">
                   <input 
                       type="text" 
                       placeholder="بحث في التخصصات..." 
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="px-4 py-2 rounded-lg border border-slate-300 focus:outline-none focus:border-[#4A90E2] text-sm"
+                      className="flex-1 md:flex-none px-4 py-2 rounded-lg border border-slate-300 focus:outline-none focus:border-[#4A90E2] text-sm"
                   />
                   <button 
                       onClick={() => setShowBulkModal(true)}
-                      className="bg-[#FFA726] text-white px-4 py-2 rounded-lg hover:bg-[#F57C00] transition font-bold text-sm flex items-center gap-2"
+                      className="bg-[#FFA726] text-white px-4 py-2 rounded-lg hover:bg-[#F57C00] transition font-bold text-sm flex items-center gap-2 whitespace-nowrap"
                   >
                       <Download className="w-4 h-4" /> إضافة جماعية
                   </button>
               </div>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto hidden md:block">
               <table className="w-full text-right text-sm">
                   <thead className="bg-slate-50 text-slate-600 font-bold">
                       <tr>
@@ -312,6 +312,35 @@ export const Specializations: React.FC<SpecializationsProps> = ({ specialization
                       ))}
                   </tbody>
               </table>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="md:hidden p-4 space-y-3">
+             {specializationStats.map((spec, idx) => (
+                 <div key={idx} className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                     <div className="flex items-center gap-3">
+                         <div className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold shrink-0" style={{ backgroundColor: spec.department.color }}>
+                             {idx + 1}
+                         </div>
+                         <div>
+                             <h4 className="font-bold text-slate-800 text-sm">{spec.name}</h4>
+                             <p className="text-xs text-slate-500">{spec.department.name}</p>
+                         </div>
+                     </div>
+                     <div className="flex flex-col items-end gap-2">
+                         <span className="text-xs bg-slate-100 px-2 py-0.5 rounded-full font-bold text-slate-600">{spec.count} كتاب</span>
+                         <div className="flex gap-1">
+                              <button onClick={() => handleOpenEdit(spec.name)} className="p-1.5 text-blue-600 bg-blue-50 rounded"><Edit2 className="w-3 h-3"/></button>
+                              <button onClick={() => handleDeleteSpec(spec.name)} className="p-1.5 text-rose-600 bg-rose-50 rounded"><Trash2 className="w-3 h-3"/></button>
+                         </div>
+                     </div>
+                 </div>
+             ))}
+             {specializationStats.length === 0 && (
+                <div className="p-8 text-center text-slate-500 bg-white rounded-xl border border-slate-200">
+                    <p>لا توجد تخصصات</p>
+                </div>
+             )}
           </div>
       </div>
 

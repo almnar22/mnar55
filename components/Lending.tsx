@@ -274,7 +274,7 @@ export const Lending: React.FC<LendingProps> = ({ books, loans, users, currentUs
                 <p className="opacity-90 text-blue-100">سجل استعارتك الحالي والسابق</p>
              </header>
              
-             <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+             <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hidden md:block">
                 <table className="w-full text-right">
                     <thead className="bg-[#4A90E2] text-white">
                         <tr>
@@ -319,6 +319,44 @@ export const Lending: React.FC<LendingProps> = ({ books, loans, users, currentUs
                     </tbody>
                 </table>
              </div>
+
+             {/* Student Mobile View */}
+             <div className="md:hidden space-y-4">
+                 {filteredLoans.map(loan => {
+                      const isOverdue = loan.status === 'overdue';
+                      return (
+                         <div key={loan.id} className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                             <div className="flex justify-between items-start mb-3">
+                                 <h4 className="font-bold text-slate-800 line-clamp-2">{loan.bookTitle}</h4>
+                                 {loan.status === 'returned' ? (
+                                      <span className="text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded-full border border-slate-200 whitespace-nowrap">تم الإرجاع</span>
+                                 ) : isOverdue ? (
+                                     <span className="text-[10px] font-bold text-white bg-rose-500 px-2 py-1 rounded-full whitespace-nowrap">متأخر</span>
+                                 ) : (
+                                     <span className="text-[10px] font-bold text-[#4A90E2] bg-blue-50 px-2 py-1 rounded-full border border-blue-100 whitespace-nowrap">نشط</span>
+                                 )}
+                             </div>
+                             <div className="grid grid-cols-2 gap-2 text-xs text-slate-600 mb-2">
+                                 <div>
+                                     <span className="block text-slate-400 text-[10px]">تاريخ الاستعارة</span>
+                                     {new Date(loan.issueDate).toLocaleDateString('ar-EG-u-nu-latn')}
+                                 </div>
+                                 <div>
+                                     <span className="block text-slate-400 text-[10px]">موعد الإرجاع</span>
+                                     {new Date(loan.dueDate).toLocaleDateString('ar-EG-u-nu-latn')}
+                                 </div>
+                             </div>
+                         </div>
+                      )
+                 })}
+                 {filteredLoans.length === 0 && (
+                    <div className="p-8 text-center text-slate-500 bg-white rounded-xl border border-slate-200">
+                        <BookOpen className="w-8 h-8 text-slate-200 mx-auto mb-2" />
+                        <p>لا توجد استعارات</p>
+                    </div>
+                 )}
+             </div>
+
           </div>
       )
   }
@@ -336,51 +374,51 @@ export const Lending: React.FC<LendingProps> = ({ books, loans, users, currentUs
       </header>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-[#FFA726] hover:-translate-y-1 transition-transform duration-300 flex items-center gap-4">
-            <div className="bg-gradient-to-br from-[#FFA726] to-[#F57C00] w-14 h-14 rounded-xl flex items-center justify-center text-white text-2xl shadow-lg shadow-orange-200">
-                <ArrowRightLeft className="w-8 h-8" />
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
+        <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border-t-4 border-[#FFA726] hover:-translate-y-1 transition-transform duration-300 flex items-center gap-3 md:gap-4">
+            <div className="bg-gradient-to-br from-[#FFA726] to-[#F57C00] w-10 h-10 md:w-14 md:h-14 rounded-xl flex items-center justify-center text-white text-lg md:text-2xl shadow-lg shadow-orange-200">
+                <ArrowRightLeft className="w-6 h-6 md:w-8 md:h-8" />
             </div>
             <div>
-                <h3 className="text-3xl font-bold text-slate-800">{stats.active}</h3>
-                <p className="text-slate-500 text-sm">إعارات نشطة</p>
+                <h3 className="text-xl md:text-3xl font-bold text-slate-800">{stats.active}</h3>
+                <p className="text-slate-500 text-xs md:text-sm">إعارات نشطة</p>
             </div>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-[#F44336] hover:-translate-y-1 transition-transform duration-300 flex items-center gap-4">
-            <div className="bg-gradient-to-br from-[#F44336] to-[#C62828] w-14 h-14 rounded-xl flex items-center justify-center text-white text-2xl shadow-lg shadow-red-200">
-                <AlertTriangle className="w-8 h-8" />
+        <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border-t-4 border-[#F44336] hover:-translate-y-1 transition-transform duration-300 flex items-center gap-3 md:gap-4">
+            <div className="bg-gradient-to-br from-[#F44336] to-[#C62828] w-10 h-10 md:w-14 md:h-14 rounded-xl flex items-center justify-center text-white text-lg md:text-2xl shadow-lg shadow-red-200">
+                <AlertTriangle className="w-6 h-6 md:w-8 md:h-8" />
             </div>
             <div>
-                <h3 className="text-3xl font-bold text-slate-800">{stats.overdue}</h3>
-                <p className="text-slate-500 text-sm">كتب متأخرة</p>
+                <h3 className="text-xl md:text-3xl font-bold text-slate-800">{stats.overdue}</h3>
+                <p className="text-slate-500 text-xs md:text-sm">كتب متأخرة</p>
             </div>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-[#4CAF50] hover:-translate-y-1 transition-transform duration-300 flex items-center gap-4">
-            <div className="bg-gradient-to-br from-[#4CAF50] to-[#2E7D32] w-14 h-14 rounded-xl flex items-center justify-center text-white text-2xl shadow-lg shadow-green-200">
-                <CheckCircle className="w-8 h-8" />
+        <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border-t-4 border-[#4CAF50] hover:-translate-y-1 transition-transform duration-300 flex items-center gap-3 md:gap-4">
+            <div className="bg-gradient-to-br from-[#4CAF50] to-[#2E7D32] w-10 h-10 md:w-14 md:h-14 rounded-xl flex items-center justify-center text-white text-lg md:text-2xl shadow-lg shadow-green-200">
+                <CheckCircle className="w-6 h-6 md:w-8 md:h-8" />
             </div>
             <div>
-                <h3 className="text-3xl font-bold text-slate-800">{stats.returned}</h3>
-                <p className="text-slate-500 text-sm">إعارات منتهية</p>
+                <h3 className="text-xl md:text-3xl font-bold text-slate-800">{stats.returned}</h3>
+                <p className="text-slate-500 text-xs md:text-sm">إعارات منتهية</p>
             </div>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl shadow-sm border-t-4 border-[#4A90E2] hover:-translate-y-1 transition-transform duration-300 flex items-center gap-4">
-            <div className="bg-gradient-to-br from-[#4A90E2] to-[#2C6FB7] w-14 h-14 rounded-xl flex items-center justify-center text-white text-2xl shadow-lg shadow-blue-200">
-                <Plus className="w-8 h-8" />
+        <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border-t-4 border-[#4A90E2] hover:-translate-y-1 transition-transform duration-300 flex items-center gap-3 md:gap-4">
+            <div className="bg-gradient-to-br from-[#4A90E2] to-[#2C6FB7] w-10 h-10 md:w-14 md:h-14 rounded-xl flex items-center justify-center text-white text-lg md:text-2xl shadow-lg shadow-blue-200">
+                <Plus className="w-6 h-6 md:w-8 md:h-8" />
             </div>
             <div>
-                <h3 className="text-3xl font-bold text-slate-800">{stats.newToday}</h3>
-                <p className="text-slate-500 text-sm">إعارات اليوم</p>
+                <h3 className="text-xl md:text-3xl font-bold text-slate-800">{stats.newToday}</h3>
+                <p className="text-slate-500 text-xs md:text-sm">إعارات اليوم</p>
             </div>
         </div>
       </div>
 
       {/* Action Bar */}
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 mb-6">
-         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-100 mb-6">
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-4 md:mb-6">
             <div className="relative">
                 <label className="block text-sm font-bold text-[#2C6FB7] mb-2">🔍 البحث عن طالب</label>
                 <input 
@@ -406,70 +444,75 @@ export const Lending: React.FC<LendingProps> = ({ books, loans, users, currentUs
             </div>
          </div>
 
-         <div className="flex flex-wrap gap-4 justify-center md:justify-start">
-             <button 
-                onClick={() => setShowIssueModal(true)}
-                className="bg-gradient-to-r from-[#4A90E2] to-[#2C6FB7] hover:from-[#3b82f6] hover:to-[#2563eb] text-white px-6 py-3 rounded-lg font-bold shadow-lg shadow-blue-500/20 transition hover:-translate-y-1 flex items-center gap-2"
-             >
-                <Plus className="w-5 h-5" /> بدء إعارة جديدة
-             </button>
-             <button 
-                onClick={() => { setShowBulkModal(true); setBulkData(''); setParsedBulkLoans([]); }}
-                className="bg-gradient-to-r from-[#FFA726] to-[#F57C00] hover:from-[#fb923c] hover:to-[#ea580c] text-white px-6 py-3 rounded-lg font-bold shadow-lg shadow-orange-500/20 transition hover:-translate-y-1 flex items-center gap-2"
-             >
-                <FileSpreadsheet className="w-5 h-5" /> إضافة إعارات جماعية
-             </button>
-             <button 
-                onClick={handleReports}
-                className="bg-white border-2 border-[#4A90E2] text-[#4A90E2] hover:bg-[#4A90E2] hover:text-white px-6 py-3 rounded-lg font-bold transition hover:-translate-y-1 flex items-center gap-2"
-             >
-                <BarChart3 className="w-5 h-5" /> تقارير الإعارة
-             </button>
-             <button 
-                onClick={() => window.print()}
-                className="bg-white border-2 border-[#4A90E2] text-[#4A90E2] hover:bg-[#4A90E2] hover:text-white px-6 py-3 rounded-lg font-bold transition hover:-translate-y-1 flex items-center gap-2"
-             >
-                <Printer className="w-5 h-5" /> طباعة السجلات
-             </button>
+         <div className="flex flex-col md:flex-row flex-wrap gap-2 md:gap-4 justify-center md:justify-start">
+             <div className="flex gap-2 w-full md:w-auto">
+                <button 
+                    onClick={() => setShowIssueModal(true)}
+                    className="flex-1 md:flex-none bg-gradient-to-r from-[#4A90E2] to-[#2C6FB7] hover:from-[#3b82f6] hover:to-[#2563eb] text-white px-4 md:px-6 py-3 rounded-lg font-bold shadow-lg shadow-blue-500/20 transition hover:-translate-y-1 flex items-center justify-center gap-2 text-sm md:text-base"
+                >
+                    <Plus className="w-5 h-5" /> بدء إعارة
+                </button>
+                <button 
+                    onClick={() => { setShowBulkModal(true); setBulkData(''); setParsedBulkLoans([]); }}
+                    className="flex-1 md:flex-none bg-gradient-to-r from-[#FFA726] to-[#F57C00] hover:from-[#fb923c] hover:to-[#ea580c] text-white px-4 md:px-6 py-3 rounded-lg font-bold shadow-lg shadow-orange-500/20 transition hover:-translate-y-1 flex items-center justify-center gap-2 text-sm md:text-base"
+                >
+                    <FileSpreadsheet className="w-5 h-5" /> إضافة جماعية
+                </button>
+             </div>
+             <div className="flex gap-2 w-full md:w-auto">
+                <button 
+                    onClick={handleReports}
+                    className="flex-1 md:flex-none bg-white border-2 border-[#4A90E2] text-[#4A90E2] hover:bg-[#4A90E2] hover:text-white px-4 md:px-6 py-3 rounded-lg font-bold transition hover:-translate-y-1 flex items-center justify-center gap-2 text-sm md:text-base"
+                >
+                    <BarChart3 className="w-5 h-5" /> التقارير
+                </button>
+                <button 
+                    onClick={() => window.print()}
+                    className="flex-1 md:flex-none bg-white border-2 border-[#4A90E2] text-[#4A90E2] hover:bg-[#4A90E2] hover:text-white px-4 md:px-6 py-3 rounded-lg font-bold transition hover:-translate-y-1 flex items-center justify-center gap-2 text-sm md:text-base"
+                >
+                    <Printer className="w-5 h-5" /> الطباعة
+                </button>
+             </div>
          </div>
       </div>
 
       {/* Records Section */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden min-h-[500px]">
-         <div className="p-6 border-b-2 border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4">
+         <div className="p-4 md:p-6 border-b-2 border-slate-100 flex flex-col md:flex-row justify-between items-center gap-4">
             <h2 className="text-xl font-bold text-[#2C6FB7] flex items-center gap-2">
                 <FileText className="w-6 h-6" /> سجلات الإعارة
             </h2>
             
-            <div className="flex gap-2">
+            <div className="flex gap-2 overflow-x-auto w-full md:w-auto no-scrollbar pb-2 md:pb-0">
                 <button 
                     onClick={() => setFilterStatus('all')}
-                    className={`px-5 py-2 rounded-full border-2 font-medium text-sm transition ${filterStatus === 'all' ? 'bg-[#4A90E2] text-white border-[#4A90E2]' : 'bg-white text-slate-500 border-slate-200 hover:border-[#4A90E2] hover:text-[#4A90E2]'}`}
+                    className={`px-4 md:px-5 py-2 rounded-full border-2 font-medium text-sm transition whitespace-nowrap ${filterStatus === 'all' ? 'bg-[#4A90E2] text-white border-[#4A90E2]' : 'bg-white text-slate-500 border-slate-200 hover:border-[#4A90E2] hover:text-[#4A90E2]'}`}
                 >
                     الكل
                 </button>
                 <button 
                     onClick={() => setFilterStatus('active')}
-                    className={`px-5 py-2 rounded-full border-2 font-medium text-sm transition ${filterStatus === 'active' ? 'bg-[#4A90E2] text-white border-[#4A90E2]' : 'bg-white text-slate-500 border-slate-200 hover:border-[#4A90E2] hover:text-[#4A90E2]'}`}
+                    className={`px-4 md:px-5 py-2 rounded-full border-2 font-medium text-sm transition whitespace-nowrap ${filterStatus === 'active' ? 'bg-[#4A90E2] text-white border-[#4A90E2]' : 'bg-white text-slate-500 border-slate-200 hover:border-[#4A90E2] hover:text-[#4A90E2]'}`}
                 >
                     نشطة
                 </button>
                 <button 
                     onClick={() => setFilterStatus('overdue')}
-                    className={`px-5 py-2 rounded-full border-2 font-medium text-sm transition ${filterStatus === 'overdue' ? 'bg-[#4A90E2] text-white border-[#4A90E2]' : 'bg-white text-slate-500 border-slate-200 hover:border-[#4A90E2] hover:text-[#4A90E2]'}`}
+                    className={`px-4 md:px-5 py-2 rounded-full border-2 font-medium text-sm transition whitespace-nowrap ${filterStatus === 'overdue' ? 'bg-[#4A90E2] text-white border-[#4A90E2]' : 'bg-white text-slate-500 border-slate-200 hover:border-[#4A90E2] hover:text-[#4A90E2]'}`}
                 >
                     متأخرة
                 </button>
                 <button 
                     onClick={() => setFilterStatus('returned')}
-                    className={`px-5 py-2 rounded-full border-2 font-medium text-sm transition ${filterStatus === 'returned' ? 'bg-[#4A90E2] text-white border-[#4A90E2]' : 'bg-white text-slate-500 border-slate-200 hover:border-[#4A90E2] hover:text-[#4A90E2]'}`}
+                    className={`px-4 md:px-5 py-2 rounded-full border-2 font-medium text-sm transition whitespace-nowrap ${filterStatus === 'returned' ? 'bg-[#4A90E2] text-white border-[#4A90E2]' : 'bg-white text-slate-500 border-slate-200 hover:border-[#4A90E2] hover:text-[#4A90E2]'}`}
                 >
                     منتهية
                 </button>
             </div>
          </div>
 
-         <div className="overflow-x-auto">
+         {/* Desktop Table View */}
+         <div className="overflow-x-auto hidden md:block">
             <table className="w-full text-right text-sm border-separate border-spacing-0">
                 <thead>
                     <tr>
@@ -578,6 +621,84 @@ export const Lending: React.FC<LendingProps> = ({ books, loans, users, currentUs
                     )}
                 </tbody>
             </table>
+         </div>
+
+         {/* Mobile Card View */}
+         <div className="md:hidden p-4 space-y-4">
+             {filteredLoans.map(loan => {
+                  const isOverdue = loan.status === 'overdue';
+                  const isReturned = loan.status === 'returned';
+                  const daysOverdue = getDaysOverdue(loan.dueDate);
+
+                  return (
+                     <div key={loan.id} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                         <div className="flex justify-between items-start mb-3 border-b border-slate-50 pb-2">
+                             <div className="flex items-center gap-2">
+                                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#4A90E2] to-[#2C6FB7] flex items-center justify-center text-white font-bold text-sm shrink-0">
+                                     {loan.studentName.charAt(0)}
+                                 </div>
+                                 <div>
+                                     <h4 className="font-bold text-slate-800 text-sm">{loan.studentName}</h4>
+                                     <span className="text-xs text-slate-400 block">{loan.userId}</span>
+                                 </div>
+                             </div>
+                             {isReturned ? (
+                                  <span className="text-[10px] bg-emerald-50 text-emerald-600 px-2 py-1 rounded-full border border-emerald-100 font-bold whitespace-nowrap">تم الإرجاع</span>
+                             ) : isOverdue ? (
+                                  <span className="text-[10px] bg-rose-50 text-rose-600 px-2 py-1 rounded-full border border-rose-100 font-bold whitespace-nowrap">متأخر {daysOverdue} يوم</span>
+                             ) : (
+                                  <span className="text-[10px] bg-orange-50 text-orange-600 px-2 py-1 rounded-full border border-orange-100 font-bold whitespace-nowrap">نشطة</span>
+                             )}
+                         </div>
+
+                         <div className="bg-slate-50 p-2.5 rounded-lg mb-3">
+                             <p className="font-bold text-slate-700 text-sm flex items-center gap-2 line-clamp-1">
+                                 <BookOpen className="w-3.5 h-3.5 text-slate-400"/>
+                                 {loan.bookTitle}
+                             </p>
+                             <div className="flex justify-between mt-1 text-[10px] text-slate-500">
+                                 <span>كود: {loan.bookId}</span>
+                                 <span className="flex items-center gap-1"><MapPin className="w-3 h-3"/> {loan.originalLocation?.cabinet} - {loan.originalLocation?.bookShelfNumber}</span>
+                             </div>
+                         </div>
+
+                         <div className="grid grid-cols-2 gap-2 text-xs mb-3">
+                             <div className="bg-white border border-slate-100 p-2 rounded text-center">
+                                 <span className="block text-slate-400 text-[10px] mb-0.5">الإعارة</span>
+                                 <span className="font-medium text-slate-700">{new Date(loan.issueDate).toLocaleDateString('ar-EG-u-nu-latn')}</span>
+                             </div>
+                             <div className="bg-white border border-slate-100 p-2 rounded text-center">
+                                 <span className="block text-slate-400 text-[10px] mb-0.5">الإرجاع</span>
+                                 <span className={`font-medium ${isOverdue && !isReturned ? 'text-rose-600' : 'text-slate-700'}`}>
+                                     {new Date(loan.dueDate).toLocaleDateString('ar-EG-u-nu-latn')}
+                                 </span>
+                             </div>
+                         </div>
+
+                         <div className="flex gap-2">
+                              {!isReturned && (
+                                  <button 
+                                      onClick={() => openReturnModal(loan)}
+                                      className="flex-1 py-2 rounded-lg bg-[#FFA726] text-white font-bold text-xs flex items-center justify-center gap-1 shadow-sm"
+                                  >
+                                      <RotateCcw className="w-3 h-3" /> إرجاع
+                                  </button>
+                              )}
+                              <button 
+                                  onClick={() => setViewLoan(loan)}
+                                  className="flex-1 py-2 rounded-lg bg-blue-50 text-blue-600 font-bold text-xs flex items-center justify-center gap-1 border border-blue-100"
+                              >
+                                  <FileText className="w-3 h-3" /> تفاصيل
+                              </button>
+                         </div>
+                     </div>
+                  )
+             })}
+             {filteredLoans.length === 0 && (
+                <div className="p-8 text-center text-slate-500">
+                     <p>لا توجد سجلات</p>
+                </div>
+             )}
          </div>
 
          {/* Pagination (Mock) */}

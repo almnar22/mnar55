@@ -35,7 +35,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate, curre
       {/* Mobile Backdrop */}
       {isOpen && (
         <div 
-            className="fixed inset-0 bg-black/50 z-40 md:hidden animate-in fade-in duration-200" 
+            className="fixed inset-0 bg-black/50 z-40 md:hidden animate-in fade-in duration-200 backdrop-blur-sm" 
             onClick={onClose}
         />
       )}
@@ -70,7 +70,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPage, onNavigate, curre
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto custom-scrollbar">
           {navItems.map((item) => {
             if (!item.visible) return null;
             

@@ -71,7 +71,7 @@ const App: React.FC = () => {
   const [notifications, setNotifications] = useState<string[]>([]);
   const [specializations, setSpecializations] = useState<string[]>([]);
 
-  // 1. Initial Load: Only fetch Settings (Fast)
+  // 1. Initial Load: Fetch Settings
   const fetchPublicSettings = async () => {
       try {
           const { data: settingsData } = await supabase.from('settings').select('*').limit(1).single();
@@ -122,39 +122,45 @@ const App: React.FC = () => {
   useEffect(() => {
       const initApp = async () => {
           setIsLoading(true);
-          // 1. Fetch Settings first
-          await fetchPublicSettings();
 
-          // 2. Check for existing session in localStorage
-          const storedUserId = localStorage.getItem('library_user_id');
-          
-          if (storedUserId) {
-              setIsLoginLoading(true); // Show loading state on login screen
-              try {
+          try {
+              // Run settings fetch and session check in parallel for speed
+              const settingsPromise = fetchPublicSettings();
+              const storedUserId = localStorage.getItem('library_user_id');
+              
+              let userFound = false;
+
+              if (storedUserId) {
                   const { data: user, error } = await supabase
                       .from('users')
                       .select('*')
                       .eq('id', storedUserId)
                       .single();
 
-                  if (user && !error && user.status !== 'suspended') {
-                      setCurrentUser(user as User);
-                      setCurrentPage(Page.DASHBOARD);
-                      // Since we restored session, fetch data immediately
-                      await fetchProtectedData();
+                  if (user && !error) {
+                      if (user.status === 'suspended') {
+                          localStorage.removeItem('library_user_id');
+                      } else {
+                          setCurrentUser(user as User);
+                          setCurrentPage(Page.DASHBOARD);
+                          userFound = true;
+                          // Trigger data fetch in background (don't await it to unblock UI)
+                          fetchProtectedData();
+                      }
                   } else {
-                      // Invalid session or user suspended/deleted
+                      // Invalid session
                       localStorage.removeItem('library_user_id');
                   }
-              } catch (err) {
-                  console.error("Session restoration failed", err);
-                  localStorage.removeItem('library_user_id');
-              } finally {
-                  setIsLoginLoading(false);
               }
+
+              await settingsPromise;
+
+          } catch (err) {
+              console.error("Initialization failed", err);
+              localStorage.removeItem('library_user_id');
+          } finally {
+              setIsLoading(false);
           }
-          
-          setIsLoading(false);
       };
 
       initApp();
@@ -178,40 +184,46 @@ const App: React.FC = () => {
 
   // Auth Handlers
   const handleLogin = async (id: string, password: string): Promise<string | void> => {
-      // 1. Authenticate against Supabase directly
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', id)
-        .eq('password', password)
-        .single();
-
-      if (error || !data) {
-          return 'بيانات الدخول غير صحيحة';
-      }
-
-      const user = data as User;
-      if (user.status === 'suspended') {
-          return 'تم إيقاف هذا الحساب. يرجى مراجعة الإدارة.';
-      }
-
-      // 2. Update visit count
-      const updatedUser = { ...user, lastLogin: new Date().toISOString(), visits: (user.visits || 0) + 1 };
-      
-      // Don't await this update to block UI, let it run in background
-      supabase.from('users').update({ lastLogin: updatedUser.lastLogin, visits: updatedUser.visits }).eq('id', user.id).then();
-      
-      // 3. Persist Session
-      localStorage.setItem('library_user_id', user.id);
-
-      setCurrentUser(updatedUser);
-      
-      // 4. Fetch Data NOW
       setIsLoginLoading(true);
-      await fetchProtectedData();
-      setIsLoginLoading(false);
-      
-      setCurrentPage(Page.DASHBOARD);
+      try {
+          // 1. Authenticate against Supabase directly
+          const { data, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', id)
+            .eq('password', password)
+            .single();
+
+          if (error || !data) {
+              return 'بيانات الدخول غير صحيحة';
+          }
+
+          const user = data as User;
+          if (user.status === 'suspended') {
+              return 'تم إيقاف هذا الحساب. يرجى مراجعة الإدارة.';
+          }
+
+          // 2. Update visit count
+          const updatedUser = { ...user, lastLogin: new Date().toISOString(), visits: (user.visits || 0) + 1 };
+          
+          // Don't await this update to block UI, let it run in background
+          supabase.from('users').update({ lastLogin: updatedUser.lastLogin, visits: updatedUser.visits }).eq('id', user.id).then();
+          
+          // 3. Persist Session
+          localStorage.setItem('library_user_id', user.id);
+
+          setCurrentUser(updatedUser);
+          
+          // 4. Fetch Data NOW
+          await fetchProtectedData();
+          
+          setCurrentPage(Page.DASHBOARD);
+      } catch (err) {
+          console.error('Login error:', err);
+          return 'حدث خطأ أثناء تسجيل الدخول';
+      } finally {
+          setIsLoginLoading(false);
+      }
   };
 
   const handleLogout = () => {

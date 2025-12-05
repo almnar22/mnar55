@@ -2,8 +2,8 @@
 import React, { useState, useMemo } from 'react';
 import { User, UserRole } from '../types';
 import { 
-    Users, Search, Plus, Edit2, Shield, Trash2, FileSpreadsheet, 
-    Check, X, RefreshCw, Key, Download, Filter, Save, GraduationCap, Briefcase, PauseCircle, Loader2, Mail, Phone, Calendar
+    Users, Search, Plus, Edit2, Trash2, FileSpreadsheet, 
+    Check, X, RefreshCw, Key, Download, Filter, GraduationCap, Briefcase, PauseCircle, Mail, AlertTriangle
 } from 'lucide-react';
 
 interface UserManagementProps {
@@ -25,6 +25,10 @@ export const UserManagement: React.FC<UserManagementProps> = ({ users, onAddUser
   const [showAddModal, setShowAddModal] = useState(false);
   const [showBulkModal, setShowBulkModal] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
+  
+  // Delete Modal State
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
   
   // Form Data
   const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -107,6 +111,20 @@ export const UserManagement: React.FC<UserManagementProps> = ({ users, onAddUser
       setShowResetModal(false);
       setGeneratedPassword('');
       setResetTargetUser(null);
+  };
+
+  // Delete Handler
+  const handleConfirmDelete = () => {
+      if (userToDelete) {
+          onDeleteUser(userToDelete.id);
+          setShowDeleteModal(false);
+          setUserToDelete(null);
+      }
+  };
+
+  const handleOpenDelete = (user: User) => {
+      setUserToDelete(user);
+      setShowDeleteModal(true);
   };
 
   // Export Users to CSV
@@ -349,24 +367,27 @@ export const UserManagement: React.FC<UserManagementProps> = ({ users, onAddUser
                      </div>
 
                      {/* Action Footer */}
-                     <div className="pt-4 border-t border-slate-100 w-full flex justify-center gap-2">
+                     <div className="pt-4 border-t border-slate-100 w-full flex justify-center gap-2 relative z-20">
                          <button 
-                             onClick={() => handleOpenEdit(user)}
-                             className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition"
+                             type="button"
+                             onClick={(e) => { e.stopPropagation(); handleOpenEdit(user); }}
+                             className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition"
                              title="تعديل"
                          >
                              <Edit2 className="w-4 h-4" />
                          </button>
                          <button 
-                             onClick={() => { setResetTargetUser(user); setGeneratedPassword((parseInt(user.id)*2).toString() || '123456'); setShowResetModal(true); }}
-                             className="p-2 bg-orange-50 text-orange-600 rounded-lg hover:bg-orange-100 transition"
+                             type="button"
+                             onClick={(e) => { e.stopPropagation(); setResetTargetUser(user); setGeneratedPassword((parseInt(user.id)*2).toString() || '123456'); setShowResetModal(true); }}
+                             className="p-2 bg-orange-50 text-orange-600 rounded-lg hover:bg-orange-500 hover:text-white transition"
                              title="إعادة تعيين كلمة المرور"
                          >
                              <Key className="w-4 h-4" />
                          </button>
                          <button 
-                             onClick={() => { if(window.confirm('هل أنت متأكد من حذف هذا المستخدم؟')) onDeleteUser(user.id); }}
-                             className="p-2 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-100 transition"
+                             type="button"
+                             onClick={(e) => { e.stopPropagation(); handleOpenDelete(user); }}
+                             className="p-2 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-600 hover:text-white transition shadow-sm"
                              title="حذف"
                          >
                              <Trash2 className="w-4 h-4" />
@@ -392,7 +413,37 @@ export const UserManagement: React.FC<UserManagementProps> = ({ users, onAddUser
          <button className="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition font-bold">التالي</button>
       </div>
 
-      {/* --- Modals (Keep existing modals unchanged visually but ensures logic is intact) --- */}
+      {/* --- Modals --- */}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && userToDelete && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+            <div className="bg-white rounded-xl w-full max-w-md p-6 shadow-2xl animate-in fade-in zoom-in duration-200 text-center">
+                 <div className="w-16 h-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4 text-rose-600">
+                   <AlertTriangle className="w-8 h-8" />
+                 </div>
+                 <h3 className="text-xl font-bold text-slate-800 mb-2">تأكيد حذف المستخدم</h3>
+                 <p className="text-slate-500 mb-6">
+                    هل أنت متأكد من حذف المستخدم <b>{userToDelete.name}</b>؟<br/>
+                    <span className="text-xs text-rose-500">لا يمكن التراجع عن هذا الإجراء. سيتم حذف الحساب نهائياً.</span>
+                 </p>
+                 <div className="flex gap-3">
+                   <button 
+                      onClick={() => setShowDeleteModal(false)} 
+                      className="flex-1 bg-white border border-slate-300 text-slate-700 py-3 rounded-lg font-bold hover:bg-slate-50 transition"
+                   >
+                      إلغاء
+                   </button>
+                   <button 
+                      onClick={handleConfirmDelete} 
+                      className="flex-1 bg-rose-600 text-white py-3 rounded-lg font-bold hover:bg-rose-700 shadow-lg shadow-rose-500/20 transition"
+                   >
+                      نعم، حذف
+                   </button>
+                 </div>
+            </div>
+        </div>
+      )}
 
       {/* Add/Edit User Modal */}
       {showAddModal && (

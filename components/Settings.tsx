@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { LibrarySettings, DashboardStats } from '../types';
 import { 
@@ -464,7 +465,7 @@ export const Settings: React.FC<SettingsProps> = ({ settings, onUpdateSettings, 
               <div className="flex items-center gap-4 text-sm text-slate-500">
                   <span className="flex items-center gap-2">
                       <Clock className="w-4 h-4" />
-                      آخر تحديث: {new Date().toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'})}
+                      آخر تحديث: {new Date().toLocaleTimeString('ar-EG-u-nu-latn', {hour:'2-digit', minute:'2-digit'})}
                   </span>
               </div>
 

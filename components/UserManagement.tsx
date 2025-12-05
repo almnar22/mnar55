@@ -341,7 +341,7 @@ export const UserManagement: React.FC<UserManagementProps> = ({ users, onAddUser
                             </td>
                             <td className="p-4 font-bold text-center">{user.visits || 0}</td>
                             <td className="p-4 text-sm text-slate-500">
-                                {user.lastLogin ? new Date(user.lastLogin).toLocaleDateString('ar-EG') : 'لم يدخل بعد'}
+                                {user.lastLogin ? new Date(user.lastLogin).toLocaleDateString('ar-EG-u-nu-latn') : 'لم يدخل بعد'}
                             </td>
                             <td className="p-4">
                                 <div className="flex justify-center gap-2">

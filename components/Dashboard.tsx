@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Book, Loan, User, LibrarySettings, DashboardStats } from '../types';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
@@ -145,7 +146,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ books, loans, users, notif
                 <Icon className="w-8 h-8" />
               </div>
               <div>
-                <h3 className="text-3xl font-bold text-slate-800">{stat.value.toLocaleString()}</h3>
+                <h3 className="text-3xl font-bold text-slate-800">{stat.value.toLocaleString('en-US')}</h3>
                 <p className="text-slate-500 font-medium">{stat.label}</p>
                 <p className="text-xs text-slate-400 mt-1">{stat.sub}</p>
               </div>
@@ -164,7 +165,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ books, loans, users, notif
                 <Icon className="w-8 h-8" />
               </div>
               <div>
-                <h3 className="text-3xl font-bold text-slate-800">{stat.value.toLocaleString()}</h3>
+                <h3 className="text-3xl font-bold text-slate-800">{stat.value.toLocaleString('en-US')}</h3>
                 <p className="text-slate-500 font-medium">{stat.label}</p>
                 <p className="text-xs text-slate-400 mt-1">{stat.sub}</p>
               </div>
@@ -181,7 +182,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ books, loans, users, notif
              <h3 className="text-xl font-bold text-[#2C6FB7] flex items-center gap-2">
                <span className="text-2xl">📈</span> حركة الإعارة الشهرية
              </h3>
-             <span className="bg-slate-50 text-slate-500 text-xs px-3 py-1.5 rounded-lg font-medium">إحصائيات شهر {new Date().toLocaleDateString('ar-EG', { month: 'long' })}</span>
+             <span className="bg-slate-50 text-slate-500 text-xs px-3 py-1.5 rounded-lg font-medium">إحصائيات شهر {new Date().toLocaleDateString('ar-EG-u-nu-latn', { month: 'long' })}</span>
           </div>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
@@ -250,7 +251,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ books, loans, users, notif
                         <div>
                             <h4 className="font-bold text-slate-800 text-sm">عملية نشطة</h4>
                             <p className="text-sm text-slate-500">الطالب "{loan.studentName}" استعار "{loan.bookTitle}"</p>
-                            <span className="text-xs text-slate-400 mt-1 block">{new Date(loan.issueDate).toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'})}</span>
+                            <span className="text-xs text-slate-400 mt-1 block">{new Date(loan.issueDate).toLocaleTimeString('ar-EG-u-nu-latn', {hour: '2-digit', minute:'2-digit'})}</span>
                         </div>
                     </li>
                 ))}
@@ -262,7 +263,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ books, loans, users, notif
                     <div>
                         <h4 className="font-bold text-slate-800 text-sm">تسجيل دخول</h4>
                         <p className="text-sm text-slate-500">تم تسجيل دخول مستخدم للنظام</p>
-                        <span className="text-xs text-slate-400 mt-1 block">{new Date().toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'})}</span>
+                        <span className="text-xs text-slate-400 mt-1 block">{new Date().toLocaleTimeString('ar-EG-u-nu-latn', {hour: '2-digit', minute:'2-digit'})}</span>
                     </div>
                 </li>
             </ul>
@@ -291,7 +292,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ books, loans, users, notif
                                 </div>
                                 <p className="text-sm text-slate-500 mt-1">الطالب: {loan.studentName}</p>
                                 <div className="flex justify-between items-center mt-2">
-                                    <span className="text-xs text-slate-400">تاريخ الاستحقاق: {new Date(loan.dueDate).toLocaleDateString('ar-EG')}</span>
+                                    <span className="text-xs text-slate-400">تاريخ الاستحقاق: {new Date(loan.dueDate).toLocaleDateString('ar-EG-u-nu-latn')}</span>
                                 </div>
                             </div>
                         </li>
@@ -310,7 +311,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ books, loans, users, notif
       <footer className="text-center pt-8 mt-8 border-t border-slate-200 text-slate-500 text-sm">
         <p className="font-bold mb-1">{settings.copyrightText}</p>
         <p dir="ltr">
-            آخر تحديث: {currentTime.toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} - {currentTime.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}
+            آخر تحديث: {currentTime.toLocaleDateString('ar-EG-u-nu-latn', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} - {currentTime.toLocaleTimeString('ar-EG-u-nu-latn', { hour: '2-digit', minute: '2-digit' })}
         </p>
       </footer>
     </div>

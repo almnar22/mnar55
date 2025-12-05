@@ -111,7 +111,7 @@ export const Lending: React.FC<LendingProps> = ({ books, loans, users, currentUs
   const calculateDueDate = (days: number) => {
       const date = new Date();
       date.setDate(date.getDate() + days);
-      return date.toLocaleDateString('ar-EG');
+      return date.toLocaleDateString('ar-EG-u-nu-latn');
   };
 
   const getDaysOverdue = (dueDate: string) => {
@@ -194,8 +194,8 @@ export const Lending: React.FC<LendingProps> = ({ books, loans, users, currentUs
                              return (
                                 <tr key={loan.id} className="hover:bg-slate-50">
                                     <td className="p-4 font-bold text-slate-800">{loan.bookTitle}</td>
-                                    <td className="p-4 text-slate-600 text-sm">{new Date(loan.issueDate).toLocaleDateString('ar-EG')}</td>
-                                    <td className="p-4 text-slate-600 text-sm">{new Date(loan.dueDate).toLocaleDateString('ar-EG')}</td>
+                                    <td className="p-4 text-slate-600 text-sm">{new Date(loan.issueDate).toLocaleDateString('ar-EG-u-nu-latn')}</td>
+                                    <td className="p-4 text-slate-600 text-sm">{new Date(loan.dueDate).toLocaleDateString('ar-EG-u-nu-latn')}</td>
                                     <td className="p-4">
                                         {loan.status === 'returned' ? (
                                              <span className="text-xs bg-slate-100 text-slate-500 px-3 py-1 rounded-full border border-slate-200">تم الإرجاع</span>
@@ -430,9 +430,9 @@ export const Lending: React.FC<LendingProps> = ({ books, loans, users, currentUs
                                     <span>{loan.originalLocation?.cabinet || '-'}</span>
                                 </div>
                             </td>
-                            <td className="p-4 text-slate-600 font-medium">{new Date(loan.issueDate).toLocaleDateString('ar-EG')}</td>
+                            <td className="p-4 text-slate-600 font-medium">{new Date(loan.issueDate).toLocaleDateString('ar-EG-u-nu-latn')}</td>
                             <td className="p-4">
-                                <div className="text-slate-600 font-medium">{new Date(loan.dueDate).toLocaleDateString('ar-EG')}</div>
+                                <div className="text-slate-600 font-medium">{new Date(loan.dueDate).toLocaleDateString('ar-EG-u-nu-latn')}</div>
                                 {isOverdue && !isReturned && (
                                     <small className="text-rose-600 font-bold">متأخر {daysOverdue} يوم</small>
                                 )}
@@ -497,7 +497,7 @@ export const Lending: React.FC<LendingProps> = ({ books, loans, users, currentUs
 
       {/* Footer */}
       <footer className="text-center pt-8 mt-8 border-t border-slate-200 text-slate-500 text-sm">
-        <p className="font-bold mb-1">نظام إعارة الكتب - مكتبة الكلية | تم تحديث البيانات: {new Date().toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'})}</p>
+        <p className="font-bold mb-1">نظام إعارة الكتب - مكتبة الكلية | تم تحديث البيانات: {new Date().toLocaleTimeString('ar-EG-u-nu-latn', {hour:'2-digit', minute:'2-digit'})}</p>
         <p>إجمالي السجلات المعروضة: {filteredLoans.length} سجل</p>
       </footer>
 
@@ -721,7 +721,7 @@ export const Lending: React.FC<LendingProps> = ({ books, loans, users, currentUs
                         </div>
                         <div>
                             <span className="block text-xs text-slate-400 mb-1">تاريخ الإعارة</span>
-                            <span className="font-medium text-slate-600">{new Date(loanToReturn.issueDate).toLocaleDateString('ar-EG')}</span>
+                            <span className="font-medium text-slate-600">{new Date(loanToReturn.issueDate).toLocaleDateString('ar-EG-u-nu-latn')}</span>
                         </div>
                         <div>
                             <span className="block text-xs text-slate-400 mb-1">حالة التأخير</span>
@@ -857,17 +857,17 @@ export const Lending: React.FC<LendingProps> = ({ books, loans, users, currentUs
                     <div className="grid grid-cols-2 gap-4">
                         <div className="border p-3 rounded-lg text-center">
                             <span className="block text-xs text-slate-400">تاريخ الإعارة</span>
-                            <span className="font-bold text-slate-800">{new Date(viewLoan.issueDate).toLocaleDateString()}</span>
+                            <span className="font-bold text-slate-800">{new Date(viewLoan.issueDate).toLocaleDateString('ar-EG-u-nu-latn')}</span>
                         </div>
                         <div className="border p-3 rounded-lg text-center">
                             <span className="block text-xs text-slate-400">تاريخ الاستحقاق</span>
-                            <span className="font-bold text-slate-800">{new Date(viewLoan.dueDate).toLocaleDateString()}</span>
+                            <span className="font-bold text-slate-800">{new Date(viewLoan.dueDate).toLocaleDateString('ar-EG-u-nu-latn')}</span>
                         </div>
                     </div>
 
                     {viewLoan.status === 'returned' && (
                         <div className="bg-emerald-50 border border-emerald-100 p-3 rounded-lg text-emerald-800 text-sm text-center">
-                            تم إرجاع الكتاب بتاريخ {viewLoan.returnDate ? new Date(viewLoan.returnDate).toLocaleDateString() : '-'}
+                            تم إرجاع الكتاب بتاريخ {viewLoan.returnDate ? new Date(viewLoan.returnDate).toLocaleDateString('ar-EG-u-nu-latn') : '-'}
                         </div>
                     )}
                     

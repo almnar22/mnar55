@@ -381,6 +381,37 @@ const App: React.FC = () => {
     }
   };
 
+  const handleAddBulkLoans = async (newLoans: Loan[]) => {
+      // For bulk, we need to be careful with updating book copies
+      // This implementation updates loan table but simplistic for book copies (one by one or just skip)
+      // For robustness, we'll try to insert loans first
+      const { error } = await supabase.from('loans').insert(newLoans);
+      
+      if (!error) {
+          setLoans(prev => [...prev, ...newLoans]);
+          
+          // Try to update book copies in background
+          // Group by bookId
+          const bookCounts: {[key: string]: number} = {};
+          newLoans.forEach(l => {
+              bookCounts[l.bookId] = (bookCounts[l.bookId] || 0) + 1;
+          });
+          
+          // Loop and update (not efficient but safe)
+          for (const [bookId, count] of Object.entries(bookCounts)) {
+              const book = books.find(b => b.id === bookId);
+              if (book) {
+                  const newRemaining = Math.max(0, book.remainingCopies - count);
+                  await supabase.from('books').update({ remainingCopies: newRemaining }).eq('id', bookId);
+                  setBooks(prev => prev.map(b => b.id === bookId ? { ...b, remainingCopies: newRemaining } : b));
+              }
+          }
+          alert(`تم إضافة ${newLoans.length} عملية إعارة بنجاح`);
+      } else {
+          alert('حدث خطأ أثناء إضافة الإعارات: ' + error.message);
+      }
+  };
+
   const handleReturnBook = async (loanId: string, condition: 'excellent' | 'good' | 'damaged' | 'lost', penalty: number, notes: string) => {
     const loan = loans.find(l => l.id === loanId);
     if (!loan) return;
@@ -495,6 +526,7 @@ const App: React.FC = () => {
             currentUser={currentUser}
             onIssueBook={handleIssueBook} 
             onReturnBook={handleReturnBook} 
+            onAddBulkLoans={handleAddBulkLoans}
         />;
       case Page.SPECIALIZATIONS:
         return <Specializations

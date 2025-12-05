@@ -5,7 +5,7 @@ import {
   Search, Calendar, User as UserIcon, ArrowRightLeft, CheckCircle, 
   AlertTriangle, Clock, History, BookOpen, BarChart3, AlertCircle, 
   Plus, Check, MapPin, DollarSign, X, Layers, FileDown, Printer, 
-  FileText, RotateCcw, Filter
+  FileText, RotateCcw, Filter, FileSpreadsheet, Download
 } from 'lucide-react';
 
 interface LendingProps {
@@ -15,9 +15,10 @@ interface LendingProps {
   currentUser: User;
   onIssueBook: (bookId: string, userId: string, duration: number, notes?: string) => void;
   onReturnBook: (loanId: string, condition: 'excellent' | 'good' | 'damaged' | 'lost', penalty: number, notes: string) => void;
+  onAddBulkLoans?: (loans: Loan[]) => void;
 }
 
-export const Lending: React.FC<LendingProps> = ({ books, loans, users, currentUser, onIssueBook, onReturnBook }) => {
+export const Lending: React.FC<LendingProps> = ({ books, loans, users, currentUser, onIssueBook, onReturnBook, onAddBulkLoans }) => {
   // --- State ---
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'overdue' | 'returned'>('all');
   
@@ -28,6 +29,7 @@ export const Lending: React.FC<LendingProps> = ({ books, loans, users, currentUs
   // Modals
   const [showIssueModal, setShowIssueModal] = useState(false);
   const [showReturnModal, setShowReturnModal] = useState(false);
+  const [showBulkModal, setShowBulkModal] = useState(false);
   const [viewLoan, setViewLoan] = useState<Loan | null>(null); // For Details Modal
   
   // Issue Form State
@@ -44,7 +46,10 @@ export const Lending: React.FC<LendingProps> = ({ books, loans, users, currentUs
   const [returnNotes, setReturnNotes] = useState('');
   const [isLocationChecked, setIsLocationChecked] = useState(false);
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  // Bulk Import State
+  const [bulkData, setBulkData] = useState('');
+  const [parsedBulkLoans, setParsedBulkLoans] = useState<(Loan & { error?: string })[]>([]);
+
   const isAdmin = currentUser.role === 'admin';
 
   // --- Derived Data ---
@@ -161,12 +166,103 @@ export const Lending: React.FC<LendingProps> = ({ books, loans, users, currentUs
       }
   };
 
-  const handleImportLoans = () => {
-      fileInputRef.current?.click();
-  };
-
   const handleReports = () => {
       alert(`ملخص التقارير:\nإعارات نشطة: ${stats.active}\nمتأخرة: ${stats.overdue}\nتم الإرجاع: ${stats.returned}`);
+  };
+
+  // --- Bulk Import Handlers ---
+  const handleParseBulk = () => {
+      if (!bulkData.trim()) return;
+      const rows = bulkData.trim().split('\n');
+      const parsed: (Loan & { error?: string })[] = [];
+
+      rows.forEach((row, index) => {
+          if (!row.trim()) return; // Skip empty lines
+
+          // Handle Excel tabs and remove potential quotes
+          const cols = row.split('\t').map(c => c.trim().replace(/^"|"$/g, ''));
+          
+          // New Format Matching "Issue Book" Modal:
+          // Col 0: Student (ID or Name)
+          // Col 1: Book (Code or Title)
+          // Col 2: Duration (Days) - Optional, default 14
+          // Col 3: Notes - Optional
+          
+          if (cols.length < 2) return;
+
+          const studentInput = cols[0];
+          const bookInput = cols[1];
+          const durationInput = parseInt(cols[2]) || 14;
+          const notesInput = cols[3] || '';
+
+          // --- Matching Logic (Same as Search) ---
+          
+          // 1. Find User: Check ID exact -> Name exact -> Name fuzzy
+          let user = users.find(u => u.id === studentInput);
+          if (!user) user = users.find(u => u.name.toLowerCase() === studentInput.toLowerCase());
+          if (!user) user = users.find(u => u.name.includes(studentInput) || studentInput.includes(u.name));
+
+          // 2. Find Book: Check Code exact -> Title exact -> Title fuzzy
+          let book = books.find(b => b.code === bookInput);
+          if (!book) book = books.find(b => b.title.toLowerCase() === bookInput.toLowerCase());
+          if (!book && bookInput) book = books.find(b => b.title.includes(bookInput));
+
+          // Error Detection
+          let errorMsg = '';
+          if (!user) errorMsg = 'طالب غير موجود';
+          else if (!book) errorMsg = 'كتاب غير موجود';
+          else if (book.remainingCopies <= 0) errorMsg = 'لا توجد نسخ متاحة';
+
+          const issueDate = new Date();
+          const dueDate = new Date();
+          dueDate.setDate(issueDate.getDate() + durationInput);
+
+          const newLoan: Loan & { error?: string } = {
+              id: crypto.randomUUID(),
+              userId: user ? user.id : 'unknown',
+              studentName: user ? user.name : studentInput, 
+              bookId: book ? book.id : 'unknown',
+              bookTitle: book ? book.title : (bookInput || 'غير معروف'),
+              issueDate: issueDate.toISOString(),
+              dueDate: dueDate.toISOString(),
+              status: 'active',
+              originalLocation: {
+                  cabinet: book ? book.cabinet : '',
+                  bookShelfNumber: book ? book.bookShelfNumber : '',
+                  shelfOrder: book ? book.shelfOrder : ''
+              },
+              notes: notesInput,
+              error: errorMsg
+          };
+          parsed.push(newLoan);
+      });
+      setParsedBulkLoans(parsed);
+  };
+
+  const handleConfirmBulk = () => {
+      if (onAddBulkLoans) {
+          // Filter out invalid ones
+          const validLoans = parsedBulkLoans.filter(l => !l.error);
+          
+          if (validLoans.length === 0) {
+              alert('لا توجد بيانات صالحة للإضافة');
+              return;
+          }
+
+          if (validLoans.length < parsedBulkLoans.length) {
+              if(!window.confirm(`يوجد ${parsedBulkLoans.length - validLoans.length} صفوف بها أخطاء. هل تريد المتابعة بإضافة ${validLoans.length} صف صحيح فقط؟`)) {
+                  return;
+              }
+          }
+          
+          // Remove error field before sending
+          const cleanLoans = validLoans.map(({ error, ...loan }) => loan);
+          onAddBulkLoans(cleanLoans);
+          
+          setShowBulkModal(false);
+          setBulkData('');
+          setParsedBulkLoans([]);
+      }
   };
 
   // --- Student View Specifics ---
@@ -318,11 +414,10 @@ export const Lending: React.FC<LendingProps> = ({ books, loans, users, currentUs
                 <Plus className="w-5 h-5" /> بدء إعارة جديدة
              </button>
              <button 
-                onClick={handleImportLoans}
+                onClick={() => { setShowBulkModal(true); setBulkData(''); setParsedBulkLoans([]); }}
                 className="bg-gradient-to-r from-[#FFA726] to-[#F57C00] hover:from-[#fb923c] hover:to-[#ea580c] text-white px-6 py-3 rounded-lg font-bold shadow-lg shadow-orange-500/20 transition hover:-translate-y-1 flex items-center gap-2"
              >
-                <FileDown className="w-5 h-5" /> استيراد إعارات
-                <input type="file" ref={fileInputRef} className="hidden" accept=".csv,.xlsx" />
+                <FileSpreadsheet className="w-5 h-5" /> إضافة إعارات جماعية
              </button>
              <button 
                 onClick={handleReports}
@@ -693,6 +788,114 @@ export const Lending: React.FC<LendingProps> = ({ books, loans, users, currentUs
                     >
                         <Check className="w-5 h-5" />
                         تأكيد الإعارة
+                    </button>
+                </div>
+            </div>
+        </div>
+      )}
+
+      {/* --- Bulk Add Loans Modal --- */}
+      {showBulkModal && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl w-full max-w-5xl my-8 relative animate-in fade-in zoom-in duration-200 flex flex-col max-h-[90vh]">
+                <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50 rounded-t-2xl">
+                    <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                        <FileSpreadsheet className="w-6 h-6 text-[#4A90E2]" />
+                        إضافة إعارات جماعية (Excel)
+                    </h3>
+                    <button onClick={() => setShowBulkModal(false)} className="text-slate-400 hover:text-slate-600"><X className="w-6 h-6" /></button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-8 space-y-6">
+                    <div className="bg-blue-50 border-r-4 border-[#4A90E2] p-5 rounded-lg">
+                        <h4 className="font-bold text-blue-800 mb-2">📋 تعليمات الإضافة الجماعية:</h4>
+                        <ol className="list-decimal list-inside text-blue-700 space-y-1 text-sm mb-4">
+                            <li>انسخ البيانات من ملف Excel وألصقها في المربع أدناه</li>
+                            <li>سيقوم النظام بالبحث عن الطلاب والكتب تلقائياً بناءً على البيانات المدخلة</li>
+                        </ol>
+                        <div className="bg-white p-3 rounded border border-blue-200 font-mono text-xs text-slate-600 overflow-x-auto whitespace-nowrap">
+                            الطالب (الاسم أو الرقم) | الكتاب (العنوان أو الكود) | مدة الإعارة (أيام - اختياري) | ملاحظات (اختياري)
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="block text-sm font-bold text-slate-700">نسخ ولصق البيانات</label>
+                        <textarea 
+                            value={bulkData}
+                            onChange={(e) => setBulkData(e.target.value)}
+                            placeholder="الصق بيانات الإعارة هنا..."
+                            className="w-full h-40 p-4 border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#4A90E2] font-mono text-sm whitespace-pre"
+                        ></textarea>
+                        <button 
+                            onClick={handleParseBulk} 
+                            disabled={!bulkData.trim()}
+                            className="w-full py-2 bg-slate-100 text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-200 font-bold text-sm disabled:opacity-50"
+                        >
+                            تحليل البيانات ومعاينتها
+                        </button>
+                    </div>
+
+                    {parsedBulkLoans.length > 0 && (
+                        <div className="border border-slate-200 rounded-xl overflow-hidden">
+                            <div className="bg-slate-50 p-3 border-b border-slate-200 font-bold text-slate-700 flex justify-between">
+                                <span>معاينة ({parsedBulkLoans.length} عملية)</span>
+                                {parsedBulkLoans.some(l => (l as any).error) && (
+                                    <span className="text-rose-600 text-xs flex items-center gap-1">
+                                        <AlertTriangle className="w-3 h-3" /> يوجد بيانات غير صالحة
+                                    </span>
+                                )}
+                            </div>
+                            <div className="max-h-60 overflow-y-auto">
+                                <table className="w-full text-sm text-right">
+                                    <thead className="bg-white text-slate-500 sticky top-0 border-b border-slate-200">
+                                        <tr>
+                                            <th className="p-3">الطالب</th>
+                                            <th className="p-3">الكتاب</th>
+                                            <th className="p-3">المدة</th>
+                                            <th className="p-3">ملاحظات</th>
+                                            <th className="p-3">التحقق</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100 text-slate-800">
+                                        {parsedBulkLoans.map((l, i) => {
+                                            const error = (l as any).error;
+                                            const duration = Math.round((new Date(l.dueDate).getTime() - new Date(l.issueDate).getTime()) / (1000 * 3600 * 24));
+                                            return (
+                                            <tr key={i} className={error ? 'bg-red-50' : ''}>
+                                                <td className="p-3">
+                                                    <div className="font-bold">{l.studentName}</div>
+                                                    <div className="text-xs text-slate-500">{l.userId}</div>
+                                                </td>
+                                                <td className="p-3">
+                                                    <div className="font-bold">{l.bookTitle}</div>
+                                                    <div className="text-xs text-slate-500">{l.bookId}</div>
+                                                </td>
+                                                <td className="p-3">{duration} يوم</td>
+                                                <td className="p-3 text-xs text-slate-500 truncate max-w-[150px]">{l.notes}</td>
+                                                <td className="p-3">
+                                                    {error ? (
+                                                        <span className="text-xs text-red-600 font-bold flex items-center gap-1"><X className="w-3 h-3"/> {error}</span>
+                                                    ) : (
+                                                        <span className="text-xs text-green-600 font-bold flex items-center gap-1"><Check className="w-3 h-3"/> صحيح</span>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        )})}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                <div className="p-5 border-t border-slate-100 bg-white rounded-b-2xl flex gap-3">
+                    <button onClick={() => {setShowBulkModal(false); setBulkData(''); setParsedBulkLoans([])}} className="flex-1 py-3 border border-slate-300 rounded-lg font-bold text-slate-700 hover:bg-slate-50">إلغاء</button>
+                    <button 
+                        onClick={handleConfirmBulk} 
+                        disabled={parsedBulkLoans.length === 0}
+                        className="flex-1 py-3 bg-[#4CAF50] text-white rounded-lg font-bold hover:bg-[#388E3C] disabled:opacity-50"
+                    >
+                        تأكيد وإضافة الإعارات
                     </button>
                 </div>
             </div>

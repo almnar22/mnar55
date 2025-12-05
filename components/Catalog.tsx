@@ -6,7 +6,7 @@ import {
   FileSpreadsheet, Check, Info, Image as ImageIcon, 
   BookOpen, AlertTriangle, CheckCircle, RotateCcw,
   UploadCloud, Download, LayoutGrid, Library, Eye,
-  MapPin, Calendar, DollarSign, Hash, Layers
+  MapPin, Calendar, DollarSign, Hash, User
 } from 'lucide-react';
 
 interface CatalogProps {
@@ -391,177 +391,118 @@ export const Catalog: React.FC<CatalogProps> = ({ books, onAddBook, onAddBooks, 
         </div>
       </div>
 
-      {/* --- Books Table (Desktop) --- */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hidden md:block">
-        <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-             <h3 className="font-bold text-slate-800">قائمة الكتب ({filteredBooks.length})</h3>
-        </div>
-        <div className="overflow-x-auto">
-            <table className="w-full text-right text-sm border-separate border-spacing-0">
-                <thead>
-                    <tr>
-                        <th className="bg-gradient-to-r from-[#4A90E2] to-[#2C6FB7] text-white p-4 font-semibold border-b-2 border-[#4A90E2] sticky top-0 first:rounded-tr-lg"></th>
-                        <th className="bg-gradient-to-r from-[#4A90E2] to-[#2C6FB7] text-white p-4 font-semibold border-b-2 border-[#4A90E2] sticky top-0">رقم الكود</th>
-                        <th className="bg-gradient-to-r from-[#4A90E2] to-[#2C6FB7] text-white p-4 font-semibold border-b-2 border-[#4A90E2] sticky top-0">رقم الجرد</th>
-                        <th className="bg-gradient-to-r from-[#4A90E2] to-[#2C6FB7] text-white p-4 font-semibold border-b-2 border-[#4A90E2] sticky top-0 min-w-[200px]">اسم الكتاب</th>
-                        <th className="bg-gradient-to-r from-[#4A90E2] to-[#2C6FB7] text-white p-4 font-semibold border-b-2 border-[#4A90E2] sticky top-0">المؤلف</th>
-                        <th className="bg-gradient-to-r from-[#4A90E2] to-[#2C6FB7] text-white p-4 font-semibold border-b-2 border-[#4A90E2] sticky top-0">التخصص</th>
-                        <th className="bg-gradient-to-r from-[#4A90E2] to-[#2C6FB7] text-white p-4 font-semibold border-b-2 border-[#4A90E2] sticky top-0">القسسم</th>
-                        <th className="bg-gradient-to-r from-[#4A90E2] to-[#2C6FB7] text-white p-4 font-semibold border-b-2 border-[#4A90E2] sticky top-0">الخزانة</th>
-                        <th className="bg-gradient-to-r from-[#4A90E2] to-[#2C6FB7] text-white p-4 font-semibold border-b-2 border-[#4A90E2] sticky top-0 text-center">رقم الكتاب<br/>في الرف</th>
-                        <th className="bg-gradient-to-r from-[#4A90E2] to-[#2C6FB7] text-white p-4 font-semibold border-b-2 border-[#4A90E2] sticky top-0 text-center">الترتيب<br/>في الرفوف</th>
-                        <th className="bg-gradient-to-r from-[#4A90E2] to-[#2C6FB7] text-white p-4 font-semibold border-b-2 border-[#4A90E2] sticky top-0 text-center">عدد<br/>النسخ</th>
-                        <th className="bg-gradient-to-r from-[#4A90E2] to-[#2C6FB7] text-white p-4 font-semibold border-b-2 border-[#4A90E2] sticky top-0">طبعة سنة</th>
-                        <th className="bg-gradient-to-r from-[#4A90E2] to-[#2C6FB7] text-white p-4 font-semibold border-b-2 border-[#4A90E2] sticky top-0">تاريخ<br/>دخول الكتاب</th>
-                        <th className="bg-gradient-to-r from-[#4A90E2] to-[#2C6FB7] text-white p-4 font-semibold border-b-2 border-[#4A90E2] sticky top-0 text-center">العدد<br/>المتبقي</th>
-                        <th className="bg-gradient-to-r from-[#4A90E2] to-[#2C6FB7] text-white p-4 font-semibold border-b-2 border-[#4A90E2] sticky top-0 text-center">عدد<br/>الاجزاء</th>
-                        <th className="bg-gradient-to-r from-[#4A90E2] to-[#2C6FB7] text-white p-4 font-semibold border-b-2 border-[#4A90E2] sticky top-0">السعر</th>
-                        <th className="bg-gradient-to-r from-[#4A90E2] to-[#2C6FB7] text-white p-4 font-semibold border-b-2 border-[#4A90E2] sticky top-0 last:rounded-tl-lg"></th>
-                    </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                    {filteredBooks.map((book) => (
-                        <tr key={book.id} className="hover:bg-blue-50/50 transition duration-150">
-                            <td className="p-3 border-b border-slate-100">
-                                <div className="w-10 h-14 bg-slate-100 rounded border border-slate-200 overflow-hidden flex items-center justify-center">
-                                    {book.coverImage ? (
-                                        <img src={book.coverImage} alt="" className="w-full h-full object-cover" />
-                                    ) : (
-                                        <ImageIcon className="w-4 h-4 text-slate-300" />
-                                    )}
-                                </div>
-                            </td>
-                            <td className="p-3 font-mono font-medium text-slate-600 border-b border-slate-100">{book.code}</td>
-                            <td className="p-3 text-slate-500 border-b border-slate-100">{book.inventoryNumber}</td>
-                            <td className="p-3 font-bold text-slate-800 border-b border-slate-100">{book.title}</td>
-                            <td className="p-3 text-slate-600 border-b border-slate-100">{book.author}</td>
-                            <td className="p-3 text-slate-600 border-b border-slate-100">{book.specialization}</td>
-                            <td className="p-3 text-slate-500 border-b border-slate-100">{book.department}</td>
-                            <td className="p-3 font-medium text-[#4A90E2] border-b border-slate-100">{book.cabinet}</td>
-                            <td className="p-3 text-center border-b border-slate-100">{book.bookShelfNumber}</td>
-                            <td className="p-3 text-center border-b border-slate-100">{book.shelfOrder}</td>
-                            <td className="p-3 text-center font-bold border-b border-slate-100">{book.copies}</td>
-                            <td className="p-3 text-slate-500 border-b border-slate-100">{book.editionYear}</td>
-                            <td className="p-3 text-slate-500 text-xs border-b border-slate-100">{book.entryDate}</td>
-                            <td className="p-3 text-center border-b border-slate-100">
-                                <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                                    book.remainingCopies > 0 
-                                    ? 'bg-emerald-100 text-emerald-700' 
-                                    : 'bg-rose-100 text-rose-700'
-                                }`}>
-                                    {book.remainingCopies}
-                                </span>
-                            </td>
-                            <td className="p-3 text-center border-b border-slate-100">{book.parts}</td>
-                            <td className="p-3 text-slate-600 font-mono border-b border-slate-100">{book.price > 0 ? book.price.toFixed(2) : '-'}</td>
-                            <td className="p-3 border-b border-slate-100">
-                                <div className="flex gap-2 justify-end">
-                                    <button 
-                                        onClick={() => setViewBook(book)} 
-                                        className="p-1.5 text-slate-500 hover:bg-slate-100 rounded transition" 
-                                        title="عرض التفاصيل"
-                                    >
-                                        <Eye className="w-4 h-4" />
-                                    </button>
-                                    {isAdmin ? (
-                                        <>
-                                            <button onClick={() => handleOpenEdit(book)} className="p-1.5 text-[#4A90E2] hover:bg-blue-50 rounded transition"><Edit2 className="w-4 h-4" /></button>
-                                            <button 
-                                                onClick={() => { setBookToDelete(book.id); setShowDeleteModal(true); }} 
-                                                className="p-1.5 text-rose-600 hover:bg-rose-50 rounded transition"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
-                                        </>
-                                    ) : (
-                                        <button className="p-1.5 text-slate-400 hover:text-[#4A90E2] transition"><Info className="w-4 h-4" /></button>
-                                    )}
-                                </div>
-                            </td>
-                        </tr>
-                    ))}
-                    {filteredBooks.length === 0 && (
-                        <tr>
-                            <td colSpan={17} className="p-12 text-center text-slate-500">
-                                <div className="flex flex-col items-center gap-3">
-                                    <Search className="w-12 h-12 text-slate-200" />
-                                    <p>لا توجد نتائج مطابقة للبحث</p>
-                                </div>
-                            </td>
-                        </tr>
-                    )}
-                </tbody>
-            </table>
-        </div>
-      </div>
-
-      {/* --- Mobile Cards View (Hidden on Desktop) --- */}
-      <div className="md:hidden space-y-4">
+      {/* --- Unified Grid Layout for All Screens --- */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
         {filteredBooks.map(book => (
-            <div key={book.id} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col gap-3">
-               <div className="flex gap-4">
-                  <div className="w-20 h-28 bg-slate-100 rounded-lg shrink-0 overflow-hidden border border-slate-200">
-                     {book.coverImage ? (
-                        <img src={book.coverImage} className="w-full h-full object-cover" alt="" />
-                     ) : (
-                        <div className="w-full h-full flex items-center justify-center text-slate-300">
-                            <ImageIcon className="w-8 h-8" />
-                        </div>
-                     )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                     <div className="flex justify-between items-start">
-                        <h4 className="font-bold text-slate-800 line-clamp-2 text-sm">{book.title}</h4>
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold whitespace-nowrap shrink-0 ${
-                            book.remainingCopies > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
-                        }`}>
-                            {book.remainingCopies} متاح
-                        </span>
-                     </div>
-                     <p className="text-xs text-slate-500 mt-1 truncate">{book.author}</p>
-                     <div className="mt-2 flex flex-wrap gap-1">
-                        <span className="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 font-mono">{book.code}</span>
-                        <span className="text-[10px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded border border-blue-100 truncate max-w-[100px]">{book.specialization}</span>
-                     </div>
-                     <div className="mt-1 flex items-center gap-2 text-[10px] text-slate-400">
-                         <span className="flex items-center gap-1"><MapPin className="w-3 h-3"/> {book.cabinet || '-'}</span>
-                     </div>
-                  </div>
+            <div key={book.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 hover:shadow-lg transition-shadow duration-300 overflow-hidden flex flex-col group h-full relative">
+               
+               {/* Badges - Floating at top corners */}
+               <div className="absolute top-3 left-3 z-10">
+                    <span className="px-2 py-1 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200 font-mono">
+                       {book.code}
+                   </span>
+               </div>
+               <div className="absolute top-3 right-3 z-10">
+                   <span className={`px-2 py-1 rounded-md text-[10px] font-bold shadow-sm ${
+                       book.remainingCopies > 0 
+                       ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' 
+                       : 'bg-rose-50 text-rose-600 border border-rose-100'
+                   }`}>
+                       {book.remainingCopies > 0 ? `${book.remainingCopies} متاح` : 'غير متاح'}
+                   </span>
                </div>
                
-               <div className="flex gap-2 pt-3 border-t border-slate-100 mt-auto">
-                   <button 
-                       onClick={() => setViewBook(book)}
-                       className="flex-1 py-1.5 bg-slate-50 text-slate-600 rounded text-xs font-bold hover:bg-slate-100 flex items-center justify-center gap-1"
-                   >
-                       <Eye className="w-3 h-3" /> التفاصيل
-                   </button>
-                   {isAdmin && (
-                       <>
-                           <button 
-                               onClick={() => handleOpenEdit(book)}
-                               className="flex-1 py-1.5 bg-blue-50 text-blue-600 rounded text-xs font-bold hover:bg-blue-100 flex items-center justify-center gap-1"
-                           >
-                               <Edit2 className="w-3 h-3" /> تعديل
-                           </button>
-                           <button 
-                               onClick={() => { setBookToDelete(book.id); setShowDeleteModal(true); }}
-                               className="flex-1 py-1.5 bg-rose-50 text-rose-600 rounded text-xs font-bold hover:bg-rose-100 flex items-center justify-center gap-1"
-                           >
-                               <Trash2 className="w-3 h-3" /> حذف
-                           </button>
-                       </>
-                   )}
+               {/* Card Body with Small Icon */}
+               <div className="p-5 flex flex-col h-full pt-12">
+                   
+                   <div className="flex items-start gap-4 mb-4">
+                       {/* Small Icon/Image */}
+                       <div className="w-14 h-16 shrink-0 bg-slate-100 rounded-lg overflow-hidden border border-slate-200 shadow-sm relative group-hover:scale-105 transition-transform">
+                           {book.coverImage ? (
+                              <img 
+                                src={book.coverImage} 
+                                className="w-full h-full object-cover" 
+                                alt={book.title} 
+                              />
+                           ) : (
+                              <div className="w-full h-full flex flex-col items-center justify-center text-slate-300 bg-slate-50">
+                                  <ImageIcon className="w-6 h-6" />
+                              </div>
+                           )}
+                       </div>
+
+                       {/* Title & Author */}
+                       <div className="flex-1 min-w-0 pt-1">
+                           <h3 className="font-bold text-slate-800 line-clamp-2 text-sm mb-1 leading-relaxed" title={book.title}>
+                               {book.title}
+                           </h3>
+                           <p className="text-xs text-slate-500 flex items-center gap-1 truncate">
+                               <User className="w-3 h-3" /> {book.author}
+                           </p>
+                       </div>
+                   </div>
+                   
+                   {/* Tags/Categories */}
+                   <div className="flex flex-wrap gap-1 mb-4 mt-auto">
+                        <span className="text-[10px] bg-blue-50 text-blue-600 px-2 py-1 rounded border border-blue-100 truncate max-w-full">
+                            {book.specialization}
+                        </span>
+                        {book.department && (
+                            <span className="text-[10px] bg-slate-50 text-slate-600 px-2 py-1 rounded border border-slate-200 truncate max-w-full">
+                                {book.department}
+                            </span>
+                        )}
+                   </div>
+                   
+                   {/* Footer Actions */}
+                   <div className="pt-3 border-t border-slate-100 flex items-center gap-2">
+                       <button 
+                           onClick={() => setViewBook(book)}
+                           className="flex-1 py-2 bg-slate-50 text-slate-700 rounded-lg text-xs font-bold hover:bg-[#4A90E2] hover:text-white transition flex items-center justify-center gap-1 group/btn"
+                       >
+                           <Eye className="w-3 h-3" /> التفاصيل
+                       </button>
+                       {isAdmin && (
+                           <div className="flex gap-1">
+                                <button 
+                                    onClick={() => handleOpenEdit(book)}
+                                    className="p-2 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold hover:bg-blue-100 transition"
+                                    title="تعديل"
+                                >
+                                    <Edit2 className="w-3 h-3" />
+                                </button>
+                                <button 
+                                    onClick={() => { setBookToDelete(book.id); setShowDeleteModal(true); }}
+                                    className="p-2 bg-rose-50 text-rose-600 rounded-lg text-xs font-bold hover:bg-rose-100 transition"
+                                    title="حذف"
+                                >
+                                    <Trash2 className="w-3 h-3" />
+                                </button>
+                           </div>
+                       )}
+                   </div>
                </div>
             </div>
         ))}
-        {filteredBooks.length === 0 && (
-            <div className="p-8 text-center text-slate-500 bg-white rounded-xl border border-slate-200">
-                <Search className="w-8 h-8 text-slate-200 mx-auto mb-2" />
-                <p>لا توجد كتب مطابقة</p>
-            </div>
-        )}
       </div>
+      
+      {filteredBooks.length === 0 && (
+          <div className="p-12 text-center text-slate-500 bg-white rounded-2xl border border-slate-200 shadow-sm col-span-full">
+              <div className="flex flex-col items-center gap-3">
+                  <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center">
+                    <Search className="w-8 h-8 text-slate-300" />
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-700">لا توجد نتائج مطابقة</h3>
+                  <p className="text-sm">حاول تغيير مصطلحات البحث أو الفلاتر</p>
+                  <button 
+                    onClick={() => setSearchFilter({term: '', type: 'all', specialization: '', department: '', cabinet: '', status: 'all'})}
+                    className="mt-2 text-blue-600 hover:underline text-sm font-medium"
+                  >
+                      إعادة تعيين البحث
+                  </button>
+              </div>
+          </div>
+      )}
 
       {/* --- View Book Details Modal --- */}
       {viewBook && (

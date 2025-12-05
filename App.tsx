@@ -128,55 +128,65 @@ const App: React.FC = () => {
   useEffect(() => {
       const initApp = async () => {
           setIsLoading(true);
-
-          // 1. Fetch settings first (doesn't require auth usually, or public table)
-          await fetchPublicSettings();
-
-          // 2. Check Session
-          const storedUserId = localStorage.getItem('library_user_id');
           
-          if (storedUserId) {
-              try {
-                  const { data: user, error } = await supabase
-                      .from('users')
-                      .select('*')
-                      .eq('id', storedUserId)
-                      .single();
+          // Safety timeout: If everything hangs (e.g. Supabase connection), force stop loading after 8 seconds
+          // This prevents the "white screen of death" or infinite loading
+          const safetyTimeout = setTimeout(() => {
+             console.warn("Initialization timed out, forcing UI render");
+             setIsLoading(false);
+          }, 8000);
 
-                  if (error) {
-                      // Only clear session if user is definitely not found (PGRST116)
-                      if (error.code === 'PGRST116') {
-                          console.warn("User not found in DB, clearing session.");
-                          localStorage.removeItem('library_user_id');
-                      } else {
-                          console.error("Network or DB error during session check", error);
-                          // Do NOT clear session on network error, but we can't log them in fully.
-                          // Ideally we might show a 'retry' screen, but for now we'll let it fail gracefully to login
-                          // or if we trust local storage, we could proceed (risky). 
-                          // Better to force re-login on critical error to be safe.
-                          localStorage.removeItem('library_user_id'); 
+          try {
+              // 1. Fetch settings first (doesn't require auth usually, or public table)
+              await fetchPublicSettings();
+
+              // 2. Check Session
+              const storedUserId = localStorage.getItem('library_user_id');
+              
+              if (storedUserId) {
+                  try {
+                      const { data: user, error } = await supabase
+                          .from('users')
+                          .select('*')
+                          .eq('id', storedUserId)
+                          .single();
+
+                      if (error) {
+                          // Only clear session if user is definitely not found (PGRST116)
+                          if (error.code === 'PGRST116') {
+                              console.warn("User not found in DB, clearing session.");
+                              localStorage.removeItem('library_user_id');
+                          } else {
+                              console.error("Network or DB error during session check", error);
+                              // Do NOT clear session on network error immediately, but we can't log them in fully if verification fails.
+                              localStorage.removeItem('library_user_id'); 
+                          }
+                      } else if (user) {
+                          if (user.status === 'suspended') {
+                              localStorage.removeItem('library_user_id');
+                          } else {
+                              // Success! Restore session
+                              const typedUser = user as User;
+                              setCurrentUser(typedUser);
+                              // Redirect to appropriate page based on role
+                              setCurrentPage(getDefaultPageForUser(typedUser.role));
+                              
+                              // Load data in background
+                              fetchProtectedData();
+                          }
                       }
-                  } else if (user) {
-                      if (user.status === 'suspended') {
-                          localStorage.removeItem('library_user_id');
-                      } else {
-                          // Success! Restore session
-                          const typedUser = user as User;
-                          setCurrentUser(typedUser);
-                          // Redirect to appropriate page based on role
-                          setCurrentPage(getDefaultPageForUser(typedUser.role));
-                          
-                          // Load data in background
-                          fetchProtectedData();
-                      }
+                  } catch (err) {
+                      console.error("Init exception", err);
+                      localStorage.removeItem('library_user_id');
                   }
-              } catch (err) {
-                  console.error("Init exception", err);
-                  localStorage.removeItem('library_user_id');
               }
+          } catch (err) {
+              console.error("App initialization failed:", err);
+          } finally {
+              // ALWAYS stop loading, regardless of success or failure
+              clearTimeout(safetyTimeout);
+              setIsLoading(false);
           }
-
-          setIsLoading(false);
       };
 
       initApp();
